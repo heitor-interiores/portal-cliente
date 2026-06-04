@@ -1,131 +1,632 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal do Cliente | Heitor Fernandes</title>
-    <style>
-        :root {
-            --verde-escuro: rgb(56,87,59);
-            --dourado: rgb(188,158,86);
-            --cinza-bg: #f9f9f6;
-            --cinza-texto: #666;
-            --vermelho: #c94c4c;
-        }
-        body { font-family: sans-serif; background: var(--cinza-bg); color: #2a2a2a; margin: 0; padding: 0; }
-        .loading, .error { text-align: center; padding: 100px 20px; display: none; }
-        .active { display: block !important; }
-        .card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); max-width: 600px; margin: 40px auto; border-top: 5px solid var(--verde-escuro); }
-        h1 { color: var(--verde-escuro); margin-bottom: 5px; text-align: center; }
-        .subtitle { text-align: center; color: var(--cinza-texto); margin-top: 0; font-size: 14px; letter-spacing: 1px; }
-        .status-badge { background: var(--dourado); color: white; padding: 5px 15px; border-radius: 20px; display: inline-block; font-size: 14px; margin-top: 10px; }
-        .info-section { margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; }
-        .info-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 15px; }
-        .info-label { font-weight: bold; color: #444; }
-        .info-value { color: var(--cinza-texto); }
-        .footer { text-align: center; font-size: 12px; color: #aaa; margin-top: 5px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portal do Cliente | Heitor Fernandes</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Raleway:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --verde-escuro:rgb(56,87,59);--verde-claro:rgb(91,119,95);
+  --dourado:rgb(188,158,86);--cinza-texto:rgb(119,119,119);
+  --cinza-linha:rgb(216,216,211);--cinza-bg:rgb(241,241,236);
+  --verde-borda:rgb(214,227,216);--vermelho:rgb(230,87,59);
+  --cinza-barra:rgb(210,210,210);--branco:#fff;--fundo:#f9f9f6;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Montserrat',sans-serif;background:var(--fundo);color:#2a2a2a;min-height:100vh}
+
+/* ── Telas de estado ── */
+#loading-screen,#error-screen,#config-screen{
+  position:fixed;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  background:var(--fundo);z-index:9999;gap:12px;padding:32px;text-align:center
+}
+#error-screen,#config-screen{display:none}
+.spin{width:36px;height:36px;border:3px solid var(--verde-borda);
+  border-top-color:var(--verde-escuro);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.state-logo{font-weight:700;font-size:17px;color:var(--verde-escuro);letter-spacing:.04em}
+.state-sub{font-size:10px;color:var(--cinza-texto);text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px}
+.state-icon{font-size:38px;margin-bottom:4px}
+.state-title{font-size:16px;font-weight:600;color:var(--verde-escuro);margin-bottom:6px}
+.state-msg{font-size:13px;color:var(--cinza-texto);line-height:1.6;max-width:340px}
+.state-msg a{color:var(--verde-escuro)}
+.state-code{background:var(--cinza-bg);border:1px solid var(--cinza-linha);border-radius:4px;
+  padding:10px 14px;font-size:11px;color:var(--cinza-texto);margin-top:12px;
+  word-break:break-all;max-width:380px;line-height:1.7;text-align:left}
+
+/* ── Cabeçalho ── */
+header{background:var(--branco);border-bottom:1px solid var(--cinza-linha);
+  padding:13px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.logo-area{display:flex;align-items:center;gap:10px;min-width:0}
+.logo-svg{width:42px;height:42px;flex-shrink:0}
+.logo-name-block h1{font-weight:700;font-size:15px;color:var(--verde-escuro);letter-spacing:.04em;line-height:1.1}
+.logo-name-block p{font-weight:400;font-size:9px;color:var(--cinza-texto);letter-spacing:.08em;text-transform:uppercase}
+.header-right{text-align:right;flex-shrink:0}
+.portal-label{font-size:9px;color:var(--cinza-texto);text-transform:uppercase;letter-spacing:.1em}
+.client-name{font-family:'Raleway',sans-serif;font-size:14px;font-weight:600;color:var(--verde-escuro)}
+
+/* ── Navegação ── */
+nav{background:var(--branco);border-bottom:1px solid var(--cinza-linha);
+  padding:0 12px;display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch}
+nav::-webkit-scrollbar{display:none}
+.tab-btn{font-size:11px;font-weight:400;color:var(--cinza-texto);text-transform:uppercase;
+  letter-spacing:.07em;padding:13px 14px;border:none;background:none;cursor:pointer;
+  border-bottom:2px solid transparent;transition:color .2s,border-color .2s;
+  position:relative;top:1px;white-space:nowrap;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+.tab-btn.active{font-weight:600;color:var(--verde-escuro);border-bottom:2px solid var(--verde-escuro)}
+
+/* ── Main ── */
+main{max-width:960px;margin:0 auto;padding:18px 14px 80px}
+.tab-content{display:none}.tab-content.active{display:block}
+
+/* ── Componentes ── */
+.diamond{display:inline-block;width:10px;height:10px;transform:rotate(45deg);flex-shrink:0}
+.section-header{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.section-title{font-size:10px;font-weight:600;color:var(--verde-escuro);text-transform:uppercase;letter-spacing:.1em}
+.progresso-title{font-size:10px;font-weight:600;color:var(--cinza-texto);text-transform:uppercase;letter-spacing:.1em}
+.section-desc{font-size:12px;font-weight:500;color:var(--cinza-texto);margin-bottom:18px}
+.divider{border:none;border-top:1px solid var(--cinza-linha);margin:18px 0}
+.card{background:var(--branco);border:1px solid var(--verde-borda);border-radius:4px;padding:14px 18px;margin-bottom:12px}
+
+/* Badges */
+.badge{display:inline-block;font-size:9px;font-weight:600;text-transform:uppercase;
+  letter-spacing:.06em;padding:4px 8px;border-radius:2px;white-space:nowrap}
+.badge-andamento{background:var(--dourado);color:var(--branco)}
+.badge-concluido{background:var(--verde-escuro);color:var(--branco)}
+.badge-pendente{background:var(--cinza-bg);color:var(--cinza-texto);border:1px solid var(--cinza-linha)}
+.badge-aprovado{background:var(--verde-borda);color:var(--verde-escuro)}
+.badge-analise{background:var(--dourado);color:var(--branco)}
+.badge-confirmado{background:var(--verde-escuro);color:var(--branco)}
+.badge-atraso{background:var(--vermelho);color:var(--branco)}
+.badge-aberto{background:var(--cinza-bg);color:var(--cinza-texto);border:1px solid var(--cinza-linha)}
+
+/* Barra */
+.progress-bar-wrap{background:var(--cinza-barra);border-radius:99px;height:6px;width:100%;overflow:hidden;margin:6px 0}
+.progress-bar-fill{height:100%;background:var(--dourado);border-radius:99px}
+
+/* Rodapé */
+footer{background:var(--branco);border-top:1px solid var(--cinza-linha);text-align:center;padding:13px 16px}
+.footer-links{display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap}
+.footer-link{display:flex;align-items:center;gap:6px;text-decoration:none;
+  font-family:'Raleway',sans-serif;font-weight:500;font-size:12px;
+  color:var(--cinza-texto);transition:color .2s}
+.footer-link:hover{color:var(--verde-escuro)}
+.footer-icon{width:16px;height:16px;fill:var(--verde-escuro);flex-shrink:0}
+
+/* ══ VISÃO GERAL ══ */
+.hero-banner{background:var(--verde-escuro);border-radius:6px;
+  padding:20px 18px 20px 22px;margin-bottom:14px;
+  display:flex;align-items:flex-start;justify-content:space-between;
+  position:relative;overflow:hidden}
+.hero-left{flex:1;min-width:0;padding-right:8px}
+.hero-proposta{font-size:9px;font-weight:600;color:rgba(255,255,255,.6);
+  text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px}
+.hero-client{font-family:'Raleway',sans-serif;font-size:26px;font-weight:600;
+  color:var(--branco);line-height:1.1;margin-bottom:5px}
+.hero-projeto{font-size:10px;font-weight:400;color:rgba(255,255,255,.65);
+  letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px}
+.hero-pills{display:flex;gap:7px;flex-wrap:wrap}
+.hero-pill{font-size:10px;font-weight:500;color:rgba(255,255,255,.8);
+  background:rgba(255,255,255,.12);padding:4px 9px;border-radius:2px}
+.hero-diamonds{flex-shrink:0;align-self:center}
+
+.progress-info-row{display:flex;justify-content:space-between;align-items:center;margin-top:6px}
+.progress-steps-label{font-size:11px;font-weight:400;color:var(--cinza-texto)}
+.progress-pct{font-size:13px;font-weight:600;color:var(--cinza-texto)}
+
+.etapa-atual-card{background:var(--branco);border:1px solid var(--verde-borda);
+  border-radius:4px;padding:14px 18px;margin-bottom:14px}
+.etapa-atual-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px}
+.etapa-label{font-size:9px;font-weight:600;color:var(--cinza-texto);
+  text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
+.etapa-nome{font-size:18px;font-weight:500;color:var(--verde-escuro)}
+.etapa-atual-badges{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0}
+.previsao-box{display:inline-block;font-size:9px;font-weight:600;text-transform:uppercase;
+  letter-spacing:.06em;padding:4px 8px;border-radius:2px;
+  background:rgb(210,210,210);color:#555;white-space:nowrap}
+.etapa-subitem{font-size:12px;font-weight:400;color:var(--verde-escuro)}
+
+.resumo-grid{display:flex;gap:7px;margin-bottom:18px}
+.resumo-item{flex:1;padding:12px 14px;background:var(--cinza-bg);
+  border:1px solid var(--verde-borda);border-radius:4px;min-width:0}
+.resumo-item.dark{background:var(--verde-escuro);border-color:var(--verde-escuro)}
+.resumo-label{font-size:9px;font-weight:500;color:var(--cinza-texto);
+  text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.resumo-item.dark .resumo-label{color:rgba(255,255,255,.7)}
+.resumo-value{font-family:'Raleway',sans-serif;font-size:15px;font-weight:600;
+  color:var(--verde-escuro);word-break:break-word}
+.resumo-item.dark .resumo-value{color:var(--branco)}
+
+/* ══ CRONOGRAMA ══ */
+.cronograma-stage{display:flex;gap:12px;margin-bottom:8px;position:relative}
+.cronograma-stage:not(:last-child)::before{content:'';position:absolute;
+  left:15px;top:36px;bottom:-8px;width:2px;background:var(--cinza-linha)}
+.stage-number{width:32px;height:32px;transform:rotate(45deg);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.stage-number span{transform:rotate(-45deg);font-size:10px;font-weight:700;color:var(--branco)}
+.stage-concluido .stage-number{background:var(--verde-escuro)}
+.stage-andamento .stage-number{background:var(--dourado)}
+.stage-pendente  .stage-number{background:var(--cinza-barra)}
+.stage-pendente  .stage-number span{color:var(--cinza-texto)}
+.stage-content{flex:1;padding-bottom:18px;min-width:0}
+.stage-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;gap:10px}
+.stage-name{font-size:14px;font-weight:600;color:var(--verde-escuro);margin-bottom:2px}
+.stage-andamento .stage-name{color:var(--dourado)}
+.stage-pendente  .stage-name{color:var(--cinza-texto)}
+.stage-prazo{font-size:10px;font-weight:500;color:var(--cinza-texto);margin-bottom:8px}
+.stage-badge-col{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+.stage-date-below{font-size:10px;color:var(--cinza-texto);text-align:right}
+.date-normal{font-weight:400}.date-bold{font-weight:700}
+.stage-items-card{background:var(--cinza-bg);border:1px solid var(--cinza-linha);
+  border-radius:4px;padding:10px 12px;display:flex;flex-direction:column;gap:9px}
+.stage-item-row{display:flex;align-items:center;gap:9px}
+.item-diamond{width:8px;height:8px;transform:rotate(45deg);flex-shrink:0}
+.item-diamond.concluido{background:var(--verde-escuro)}
+.item-diamond.andamento{background:var(--dourado)}
+.item-diamond.pendente{background:var(--cinza-texto)}
+.item-text{font-size:12px;font-weight:500;color:#2a2a2a;flex:1}
+.item-text.andamento-text,.item-text.pendente-text{color:var(--cinza-texto)}
+
+/* ══ ARQUIVOS ══ */
+.pasta-titulo{display:inline-block;font-size:10px;font-weight:600;color:var(--branco);
+  background:var(--verde-escuro);text-transform:uppercase;letter-spacing:.1em;
+  padding:4px 11px;margin-bottom:8px;border-radius:2px}
+.arquivo-row{background:var(--branco);border:1px solid var(--cinza-linha);border-radius:4px;
+  padding:11px 13px;margin-bottom:7px;display:flex;align-items:center;gap:11px;
+  text-decoration:none;color:inherit;-webkit-tap-highlight-color:transparent}
+.arquivo-row:active{border-color:var(--verde-escuro)}
+.tipo-badge{display:flex;align-items:center;justify-content:center;
+  width:36px;height:36px;border-radius:4px;font-size:10px;font-weight:700;flex-shrink:0}
+.tipo-pdf{background:rgb(244,237,224);color:rgb(188,158,86)}
+.tipo-jpg,.tipo-png{background:var(--verde-borda);color:var(--verde-claro)}
+.tipo-dwg{background:var(--cinza-bg);color:var(--cinza-texto)}
+.arquivo-info{flex:1;min-width:0}
+.arquivo-nome{font-size:12px;font-weight:500;color:#2a2a2a;margin-bottom:2px}
+.arquivo-data{font-size:10px;color:var(--cinza-texto)}
+.pasta-section{margin-bottom:20px}
+.arq-diamond{display:inline-block;width:10px;height:10px;transform:rotate(45deg);
+  background:var(--verde-escuro);flex-shrink:0}
+
+/* ══ FINANCEIRO ══ */
+.pagamento-card{background:var(--cinza-bg);border:1px solid var(--verde-borda);
+  border-radius:4px;padding:12px 15px;margin-bottom:14px}
+.pagamento-title{font-size:10px;font-weight:600;color:var(--dourado);
+  text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
+.pagamento-desc{font-family:'Raleway',sans-serif;font-size:12px;font-weight:500;color:var(--cinza-texto)}
+.fin-resumo-grid{display:flex;gap:7px;margin-bottom:12px}
+.fin-progress-row{display:flex;justify-content:space-between;margin-bottom:4px;
+  font-family:'Raleway',sans-serif;font-size:11px;font-weight:500;color:var(--cinza-texto)}
+.parcelas-header{display:flex;justify-content:space-between;align-items:center;margin:16px 0 10px}
+.parcelas-label{display:inline-block;font-size:10px;font-weight:600;
+  background:var(--verde-escuro);color:var(--branco);
+  padding:4px 11px;border-radius:2px;text-transform:uppercase;letter-spacing:.08em}
+.btn-pix{font-size:10px;font-weight:600;color:var(--verde-escuro);background:var(--branco);
+  border:1px solid var(--verde-escuro);padding:5px 11px;border-radius:2px;cursor:pointer;
+  text-transform:uppercase;letter-spacing:.05em;-webkit-tap-highlight-color:transparent}
+.btn-pix:active{background:var(--verde-escuro);color:var(--branco)}
+.parcela-row{background:var(--branco);border:1px solid var(--cinza-linha);border-radius:4px;
+  padding:11px 13px;margin-bottom:7px;display:flex;align-items:center;gap:9px}
+.parcela-diamond{width:10px;height:10px;transform:rotate(45deg);flex-shrink:0}
+.parcela-info{flex:1;min-width:0}
+.parcela-nome{font-family:'Raleway',sans-serif;font-size:12px;font-weight:600;
+  color:var(--verde-escuro);margin-bottom:2px}
+.parcela-nome.atraso{color:var(--vermelho)}
+.parcela-nome.aberto{color:var(--cinza-texto)}
+.parcela-venc{font-size:10px;font-weight:500;color:var(--cinza-texto)}
+.parcela-direita{display:flex;align-items:center;gap:7px;flex-shrink:0}
+.parcela-valor{font-family:'Raleway',sans-serif;font-size:12px;font-weight:600;color:var(--verde-escuro)}
+.fin-nota{font-size:11px;font-style:italic;color:var(--cinza-texto);margin-top:10px;text-align:center}
+
+/* ── PIX popup ── */
+.popup-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);
+  z-index:999;align-items:center;justify-content:center;padding:20px}
+.popup-overlay.show{display:flex}
+.popup-box{background:var(--branco);border:1px solid var(--verde-escuro);border-radius:6px;
+  padding:22px;max-width:310px;width:100%;text-align:center}
+.popup-title{font-weight:700;font-size:12px;color:var(--verde-escuro);
+  text-transform:uppercase;letter-spacing:.08em;margin-bottom:11px}
+.popup-key{font-weight:700;font-size:13px;color:var(--verde-escuro);
+  background:var(--cinza-bg);border:1px solid var(--verde-escuro);
+  border-radius:4px;padding:9px 12px;margin-bottom:10px;cursor:pointer;word-break:break-all}
+.popup-hint{font-size:11px;color:var(--cinza-texto);margin-bottom:12px}
+.popup-close{font-size:11px;font-weight:600;color:var(--cinza-texto);
+  background:none;border:1px solid var(--cinza-linha);border-radius:2px;padding:6px 18px;cursor:pointer}
+
+/* ══ RESPONSIVIDADE MOBILE ══ */
+@media(max-width:560px){
+  .hero-diamonds{display:none}
+  .hero-client{font-size:22px}
+  .resumo-grid,.fin-resumo-grid{flex-direction:column}
+  .etapa-atual-top{flex-wrap:wrap}
+  .etapa-atual-badges{flex-direction:row;flex-wrap:wrap}
+  .stage-top{flex-wrap:wrap}
+  .stage-badge-col{flex-direction:row;align-items:center;gap:6px}
+  .stage-date-below{text-align:left}
+  .parcela-direita{flex-direction:column;align-items:flex-end;gap:3px}
+}
+</style>
 </head>
 <body>
 
-    <!-- Tela de Carregamento -->
-    <div id="loading-screen" class="loading active">
-        <p style="color: var(--cinza-texto); font-size: 16px;">Buscando informações do seu projeto...</p>
-    </div>
+<!-- Tela carregando -->
+<div id="loading-screen">
+  <div class="spin"></div>
+  <p style="font-size:13px;color:var(--cinza-texto)">Carregando seu portal…</p>
+</div>
 
-    <!-- Tela de Erro -->
-    <div id="error-screen" class="error">
-        <div class="card" style="border-top-color: var(--vermelho);">
-            <h3 style="color: var(--vermelho);">Projeto Não Encontrado</h3>
-            <p>Por favor, verifique se o código do cliente na URL está correto ou tente novamente mais tarde.</p>
+<!-- Tela: link inválido -->
+<div id="error-screen">
+  <div class="state-logo">HEITOR FERNANDES</div>
+  <div class="state-sub">Designer de Interiores</div>
+  <div class="state-icon">🔍</div>
+  <div class="state-title">Projeto não encontrado</div>
+  <div class="state-msg">
+    Este link não corresponde a nenhum projeto ativo.<br>
+    Entre em contato pelo <a href="https://wa.me/5586988044155">WhatsApp</a>.
+  </div>
+</div>
+
+<!-- Tela: script não configurado -->
+<div id="config-screen">
+  <div class="state-logo">HEITOR FERNANDES</div>
+  <div class="state-sub">Portal do Cliente</div>
+  <div class="state-icon">⚙️</div>
+  <div class="state-title">Configuração pendente</div>
+  <div class="state-msg">Cole a URL do Apps Script no código (veja o arquivo como-configurar.txt).</div>
+  <div class="state-code">
+    Procure no código:<br>
+    <strong>const SCRIPT_URL = "COLE_AQUI..."</strong><br>
+    e substitua pelo link do seu Apps Script.
+  </div>
+</div>
+
+<!-- ═══ INTERFACE PRINCIPAL ═══ -->
+<header style="display:none" id="main-header">
+  <div class="logo-area">
+    <!--
+      LOGO: substitua o <svg> abaixo pela sua imagem.
+      Exemplo: <img src="SUA_URL" style="width:42px;height:42px;object-fit:contain;">
+    -->
+    <svg class="logo-svg" viewBox="0 0 54 54" fill="none">
+      <rect x="3"  y="8"  width="7"  height="38" fill="rgb(56,87,59)"/>
+      <rect x="3"  y="8"  width="22" height="7"  fill="rgb(56,87,59)"/>
+      <rect x="3"  y="26" width="16" height="6"  fill="rgb(56,87,59)"/>
+      <rect x="33" y="8"  width="7"  height="38" fill="rgb(56,87,59)"/>
+      <rect x="33" y="8"  width="19" height="7"  fill="rgb(56,87,59)"/>
+      <rect x="33" y="38" width="19" height="7"  fill="rgb(56,87,59)"/>
+    </svg>
+    <div class="logo-name-block">
+      <h1>HEITOR FERNANDES</h1>
+      <p>Designer de Interiores</p>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="portal-label">Portal do Cliente</div>
+    <div class="client-name" id="hdr-client"></div>
+  </div>
+</header>
+
+<nav style="display:none" id="main-nav">
+  <button class="tab-btn active" onclick="abrirAba('visao',this)">Visão Geral</button>
+  <button class="tab-btn" onclick="abrirAba('cronograma',this)">Cronograma</button>
+  <button class="tab-btn" onclick="abrirAba('arquivos',this)">Arquivos</button>
+  <button class="tab-btn" onclick="abrirAba('financeiro',this)">Financeiro</button>
+</nav>
+
+<main style="display:none" id="main-content">
+
+  <!-- VISÃO GERAL -->
+  <div id="tab-visao" class="tab-content active">
+    <div class="hero-banner">
+      <div class="hero-left">
+        <div class="hero-proposta">Proposta Nº <span id="vg-proposta"></span></div>
+        <div class="hero-client" id="vg-client"></div>
+        <div class="hero-projeto" id="vg-projeto"></div>
+        <div class="hero-pills">
+          <span class="hero-pill">Atualizado hoje</span>
+          <span class="hero-pill" id="vg-pct-pill"></span>
         </div>
+      </div>
+      <div class="hero-diamonds">
+        <svg width="88" height="88" viewBox="0 0 110 110">
+          <rect x="10" y="10" width="28" height="28" transform="rotate(45 24 24)" fill="none" stroke="rgb(91,119,95)" stroke-width="2" opacity="0.45"/>
+          <rect x="10" y="46" width="28" height="28" transform="rotate(45 24 60)" fill="none" stroke="rgb(91,119,95)" stroke-width="2" opacity="0.45"/>
+          <rect x="10" y="82" width="28" height="28" transform="rotate(45 24 96)" fill="none" stroke="rgb(91,119,95)" stroke-width="2" opacity="0.45"/>
+          <rect x="62" y="46" width="28" height="28" transform="rotate(45 76 60)" fill="none" stroke="rgb(91,119,95)" stroke-width="2" opacity="0.45"/>
+          <rect x="62" y="82" width="28" height="28" transform="rotate(45 76 96)" fill="none" stroke="rgb(91,119,95)" stroke-width="2" opacity="0.45"/>
+        </svg>
+      </div>
     </div>
 
-    <!-- Conteúdo Principal do Portal -->
-    <div id="main-content" style="display:none;">
-        <div class="card">
-            <h1 id="cli-nome-topo">HEITOR FERNANDES</h1>
-            <p class="subtitle">DESIGNER DE INTERIORES</p>
-            
-            <div style="text-align: center;">
-                <div id="cli-etapa" class="status-badge">Carregando...</div>
-            </div>
+    <div class="card">
+      <div class="section-header">
+        <div class="diamond" style="background:var(--dourado)"></div>
+        <span class="progresso-title">Progresso Geral</span>
+      </div>
+      <div class="progress-bar-wrap" style="margin-top:9px">
+        <div class="progress-bar-fill" id="vg-barra" style="width:0%"></div>
+      </div>
+      <div class="progress-info-row">
+        <span class="progress-steps-label" id="vg-etapas-label"></span>
+        <span class="progress-pct" id="vg-pct"></span>
+      </div>
+    </div>
 
-            <div class="info-section">
-                <div class="info-row">
-                    <span class="info-label">Proposta:</span>
-                    <span id="cli-proposta" class="info-value">-</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Tipo de Projeto:</span>
-                    <span id="cli-tipo" class="info-value">-</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Subitem Atual:</span>
-                    <span id="cli-subitem" class="info-value">-</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Previsão de Entrega:</span>
-                    <span id="cli-previsao" class="info-value">-</span>
-                </div>
-            </div>
+    <div class="etapa-atual-card">
+      <div class="etapa-atual-top">
+        <div>
+          <div class="etapa-label">Etapa Atual</div>
+          <div class="etapa-nome" id="vg-etapa-nome"></div>
         </div>
-        <div class="footer">Portal do Cliente • Heitor Fernandes</div>
+        <div class="etapa-atual-badges">
+          <span class="badge badge-andamento">Em Andamento</span>
+          <span class="previsao-box" id="vg-previsao"></span>
+        </div>
+      </div>
+      <div class="etapa-subitem" id="vg-subitem"></div>
     </div>
+
+    <div class="resumo-grid">
+      <div class="resumo-item">
+        <div class="resumo-label">Investimento Total</div>
+        <div class="resumo-value" id="vg-invest"></div>
+      </div>
+      <div class="resumo-item dark">
+        <div class="resumo-label">Total Pago</div>
+        <div class="resumo-value" id="vg-pago"></div>
+      </div>
+      <div class="resumo-item">
+        <div class="resumo-label">Arquivos</div>
+        <div class="resumo-value" id="vg-arquivos"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CRONOGRAMA -->
+  <div id="tab-cronograma" class="tab-content">
+    <div class="section-header">
+      <div class="diamond" style="background:var(--verde-borda)"></div>
+      <span class="section-title">Cronograma</span>
+    </div>
+    <div class="section-desc">Cada etapa do projeto organizada de forma clara e transparente.</div>
+    <hr class="divider">
+    <div id="crono-container"></div>
+  </div>
+
+  <!-- ARQUIVOS -->
+  <div id="tab-arquivos" class="tab-content">
+    <div class="section-header">
+      <div class="arq-diamond"></div>
+      <span class="section-title">Arquivos</span>
+    </div>
+    <div class="section-desc">Acesse, visualize e faça o download de todas as documentações e entregáveis do projeto.</div>
+    <hr class="divider">
+    <div id="arq-container"></div>
+  </div>
+
+  <!-- FINANCEIRO -->
+  <div id="tab-financeiro" class="tab-content">
+    <div class="section-header">
+      <div class="diamond" style="background:var(--dourado)"></div>
+      <span class="section-title">Resumo Financeiro</span>
+    </div>
+    <div class="section-desc">Consulte o fluxo de parcelas, valores totais e realize pagamentos diretamente via PIX.</div>
+    <hr class="divider">
+    <div class="pagamento-card">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px">
+        <div class="diamond" style="background:var(--dourado);width:8px;height:8px"></div>
+        <span class="pagamento-title">Forma de Pagamento Definida</span>
+      </div>
+      <div class="pagamento-desc" id="fin-forma"></div>
+    </div>
+    <div class="fin-resumo-grid">
+      <div class="resumo-item"><div class="resumo-label">Investimento Total</div><div class="resumo-value" id="fin-invest"></div></div>
+      <div class="resumo-item dark"><div class="resumo-label">Total Pago</div><div class="resumo-value" id="fin-pago"></div></div>
+      <div class="resumo-item"><div class="resumo-label">Saldo Remanescente</div><div class="resumo-value" id="fin-saldo" style="color:var(--verde-escuro)"></div></div>
+    </div>
+    <div class="fin-progress-row">
+      <span id="fin-pago-pct"></span><span id="fin-total-label"></span>
+    </div>
+    <div class="progress-bar-wrap" style="margin-bottom:16px">
+      <div class="progress-bar-fill" id="fin-barra" style="width:0%"></div>
+    </div>
+    <div class="parcelas-header">
+      <span class="parcelas-label">Parcelas</span>
+      <button class="btn-pix" onclick="abrirPix()">Copiar Chave PIX</button>
+    </div>
+    <div id="fin-parcelas"></div>
+    <div class="fin-nota">Após efetuar pagamentos, o sistema leva até 24hs para ser atualizado.</div>
+  </div>
+
+</main>
+
+<footer style="display:none" id="main-footer">
+  <div class="footer-links">
+    <a class="footer-link" href="https://wa.me/5586988044155" target="_blank">
+      <svg class="footer-icon" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      (86) 9 8804-4155
+    </a>
+    <a class="footer-link" href="https://www.instagram.com/heitor.interiores?igsh=MThqZzkyOXRuZHpyag%3D%3D&utm_source=qr" target="_blank">
+      <svg class="footer-icon" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+      @heitor.interiores
+    </a>
+  </div>
+</footer>
+
+<div class="popup-overlay" id="pix-popup">
+  <div class="popup-box">
+    <div class="popup-title">Chave PIX</div>
+    <div class="popup-key" id="pix-key" onclick="copiarPix()">heitor.interiores@gmail.com</div>
+    <div class="popup-hint">Toque na chave para copiar</div>
+    <button class="popup-close" onclick="fecharPix()">Fechar</button>
+  </div>
+</div>
 
 <script>
-// ⚠️ ATENÇÃO: SUBSTITUA O LINK ABAIXO PELO SEU URL DO GOOGLE APPS SCRIPT!
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwllVGdpwXcu8byU9ShwcjXkblsVZOkzKlaYUSLSnG0jWGWVZr8reBTJ61Y3lfrsS7r/exec";
+// ══════════════════════════════════════════════════════════════
+//  ★  COLE AQUI A URL DO SEU APPS SCRIPT  ★
+// ══════════════════════════════════════════════════════════════
+const SCRIPT_URL = "COLE_AQUI_A_URL_DO_SEU_APPS_SCRIPT";
+// ══════════════════════════════════════════════════════════════
 
-function getClientCode() {
-  const params = new URLSearchParams(window.location.search);
-  return params.get('c');
+function fmt(v){return Number(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}
+function show(id){document.getElementById(id).style.display=''}
+function hide(id){document.getElementById(id).style.display='none'}
+function getCode(){return new URLSearchParams(window.location.search).get('c')}
+
+async function fetchDados(codigo){
+  const r = await fetch(SCRIPT_URL+'?c='+encodeURIComponent(codigo));
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  return r.json();
 }
 
-async function fetchDados(codigo) {
-  const url = `${SCRIPT_URL}?c=${encodeURIComponent(codigo)}`;
-  const res = await fetch(url);
-  return await res.json();
+function renderVisaoGeral(d){
+  const conc=[d.status_ep1,d.status_ep2,d.status_ep3,d.status_ep4].filter(s=>s==='concluido').length;
+  const pct=Math.round(conc/4*100);
+  const arq=Number(d.total_arquivos)||0;
+  document.getElementById('hdr-client').textContent   =d.nome_cliente||'';
+  document.getElementById('vg-proposta').textContent  =d.numero_proposta||'';
+  document.getElementById('vg-client').textContent    =d.nome_cliente||'';
+  document.getElementById('vg-projeto').textContent   =d.tipo_projeto||'';
+  document.getElementById('vg-pct-pill').textContent  =pct+'% concluído';
+  document.getElementById('vg-barra').style.width     =pct+'%';
+  document.getElementById('vg-etapas-label').textContent=conc+' de 4 etapas concluídas';
+  document.getElementById('vg-pct').textContent       =pct+'%';
+  document.getElementById('vg-etapa-nome').textContent=d.etapa_atual_nome||'';
+  document.getElementById('vg-subitem').textContent   =d.etapa_atual_subitem||'';
+  document.getElementById('vg-invest').textContent    =fmt(d.investimento_total);
+  document.getElementById('vg-pago').textContent      =fmt(d.total_pago);
+  document.getElementById('vg-arquivos').textContent  =arq+' unidades';
+  document.getElementById('vg-previsao').textContent  ='Previsão: '+(d.previsao_etapa_atual||'');
 }
 
-function show(id) { document.getElementById(id).style.display = 'block'; }
-function hide(id) { document.getElementById(id).style.display = 'none'; }
-
-function mostrarPortal(d) {
-  hide('loading-screen');
-  
-  // Preenche os dados básicos na tela
-  document.getElementById('cli-nome-topo').textContent = (d.nome_cliente || 'HEITOR FERNANDES').toUpperCase();
-  document.getElementById('cli-proposta').textContent  = d.numero_proposta || '-';
-  document.getElementById('cli-tipo').textContent      = d.tipo_projeto || '-';
-  document.getElementById('cli-etapa').textContent     = d.etapa_atual_nome || 'Em Andamento';
-  document.getElementById('cli-subitem').textContent   = d.etapa_atual_subitem || '-';
-  document.getElementById('cli-previsao').textContent  = d.previsao_etapa_atual || '-';
-  
-  show('main-content');
+function renderCronograma(d){
+  const etapas=[
+    {n:'01',nome:d.ep1_nome,prazo:d.ep1_prazo,data:d.ep1_data,st:d.status_ep1,si:d.ep1_subitens},
+    {n:'02',nome:d.ep2_nome,prazo:d.ep2_prazo,data:d.ep2_data,st:d.status_ep2,si:d.ep2_subitens},
+    {n:'03',nome:d.ep3_nome,prazo:d.ep3_prazo,data:d.ep3_data,st:d.status_ep3,si:d.ep3_subitens},
+    {n:'04',nome:d.ep4_nome,prazo:d.ep4_prazo,data:d.ep4_data,st:d.status_ep4,si:d.ep4_subitens},
+  ];
+  const bc={
+    concluido:{cls:'badge-concluido',label:'Concluído'},
+    andamento:{cls:'badge-andamento',label:'Em Andamento'},
+    pendente: {cls:'badge-pendente', label:'Pendente'},
+  };
+  document.getElementById('crono-container').innerHTML=etapas.map(e=>{
+    const st=e.st||'pendente';
+    const b=bc[st]||bc.pendente;
+    const dataStr=st==='concluido'?e.data:(e.data==='A ser agendado'?'A ser agendado':'Previsão: '+e.data);
+    const siHtml=(e.si||[]).map(si=>{
+      const dc=si.status==='concluido'?'concluido':si.status==='andamento'?'andamento':'pendente';
+      const tc=si.status==='concluido'?'':'andamento-text';
+      return`<div class="stage-item-row"><div class="item-diamond ${dc}"></div><span class="item-text ${tc}">${si.nome}</span></div>`;
+    }).join('');
+    return`<div class="cronograma-stage stage-${st}">
+      <div class="stage-number"><span>${e.n}</span></div>
+      <div class="stage-content">
+        <div class="stage-top">
+          <div><div class="stage-name">${e.nome||''}</div><div class="stage-prazo">${e.prazo||''}</div></div>
+          <div class="stage-badge-col">
+            <span class="badge ${b.cls}">${b.label}</span>
+            <div class="stage-date-below">${dataStr||''}</div>
+          </div>
+        </div>
+        <div class="stage-items-card">${siHtml||'<span style="font-size:11px;color:var(--cinza-texto)">Sem subitens</span>'}</div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
-async function init() {
-  const codigo = getClientCode();
-  if (!codigo) {
-    hide('loading-screen');
-    show('error-screen');
+function renderArquivos(d){
+  const pastas=d.pastas||[];
+  if(!pastas.length){
+    document.getElementById('arq-container').innerHTML='<p style="color:var(--cinza-texto);font-size:13px">Nenhum arquivo disponível ainda.</p>';
     return;
   }
-  try {
-    const dados = await fetchDados(codigo);
-    if (!dados || dados.erro) {
-      hide('loading-screen');
-      show('error-screen');
-      return;
-    }
-    mostrarPortal(dados);
-  } catch(e) {
-    hide('loading-screen');
-    show('error-screen');
-  }
+  document.getElementById('arq-container').innerHTML=pastas.map(p=>{
+    const arqs=(p.arquivos||[]).map(a=>{
+      const tc='tipo-'+(a.tipo||'pdf').toLowerCase();
+      const bc=a.status==='aprovado'?'badge-aprovado':'badge-analise';
+      const bl=a.status==='aprovado'?'Aprovado':'Em Análise';
+      return`<a class="arquivo-row" href="${a.link||'#'}" target="_blank">
+        <div class="tipo-badge ${tc}">${a.tipo||'?'}</div>
+        <div class="arquivo-info"><div class="arquivo-nome">${a.nome||''}</div><div class="arquivo-data">${a.data||''}</div></div>
+        <span class="badge ${bc}">${bl}</span></a>`;
+    }).join('');
+    return`<div class="pasta-section"><div class="pasta-titulo">${p.titulo||''}</div>${arqs}</div>`;
+  }).join('');
 }
 
+function renderFinanceiro(d){
+  const inv=Number(d.investimento_total)||0;
+  const pago=Number(d.total_pago)||0;
+  const saldo=inv-pago;
+  const pct=inv>0?Math.round(pago/inv*100):0;
+  document.getElementById('fin-forma').textContent    =d.forma_pagamento||'';
+  document.getElementById('fin-invest').textContent   =fmt(inv);
+  document.getElementById('fin-pago').textContent     =fmt(pago);
+  document.getElementById('fin-saldo').textContent    =fmt(saldo);
+  document.getElementById('fin-pago-pct').textContent ='Pago: '+pct+'%';
+  document.getElementById('fin-total-label').textContent='Total: '+fmt(inv);
+  document.getElementById('fin-barra').style.width    =pct+'%';
+  const dMap={confirmado:'background:var(--verde-escuro)',atraso:'background:var(--vermelho)',aberto:'background:transparent;border:2px solid rgb(197,197,191)'};
+  const cMap={
+    confirmado:{bg:'var(--verde-escuro)',txt:'#fff',label:'Confirmado'},
+    atraso:    {bg:'var(--vermelho)',    txt:'#fff',label:'Em atraso'},
+    aberto:    {bg:'var(--cinza-bg)',    txt:'var(--cinza-texto)',label:'Em aberto'},
+  };
+  document.getElementById('fin-parcelas').innerHTML=(d.parcelas||[]).map(p=>{
+    const cm=cMap[p.status]||cMap.aberto;
+    const nc=p.status==='atraso'?'atraso':p.status==='aberto'?'aberto':'';
+    return`<div class="parcela-row">
+      <div class="parcela-diamond" style="${dMap[p.status]||dMap.aberto}"></div>
+      <div class="parcela-info">
+        <div class="parcela-nome ${nc}">${p.nome||''}</div>
+        <div class="parcela-venc">Vencimento: ${p.vencimento||''}</div>
+      </div>
+      <div class="parcela-direita">
+        <span class="parcela-valor">${fmt(p.valor)}</span>
+        <span class="badge" style="background:${cm.bg};color:${cm.txt}">${cm.label}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function mostrarPortal(d){
+  renderVisaoGeral(d);renderCronograma(d);renderArquivos(d);renderFinanceiro(d);
+  hide('loading-screen');
+  show('main-header');show('main-nav');show('main-content');show('main-footer');
+}
+
+async function init(){
+  if(SCRIPT_URL==='COLE_AQUI_A_URL_DO_SEU_APPS_SCRIPT'){
+    hide('loading-screen');show('config-screen');return;
+  }
+  const codigo=getCode();
+  if(!codigo){hide('loading-screen');show('error-screen');return;}
+  try{
+    const d=await fetchDados(codigo);
+    if(!d||d.erro){hide('loading-screen');show('error-screen');return;}
+    mostrarPortal(d);
+  }catch(e){hide('loading-screen');show('error-screen');}
+}
+
+function abrirAba(aba,btn){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+aba).classList.add('active');
+  btn.classList.add('active');
+}
+function abrirPix(){document.getElementById('pix-popup').classList.add('show')}
+function fecharPix(){document.getElementById('pix-popup').classList.remove('show')}
+function copiarPix(){
+  navigator.clipboard.writeText('heitor.interiores@gmail.com').then(()=>{
+    document.getElementById('pix-key').textContent='✓ Copiado!';
+    setTimeout(()=>{document.getElementById('pix-key').textContent='heitor.interiores@gmail.com'},2000);
+  });
+}
 init();
 </script>
 </body>
