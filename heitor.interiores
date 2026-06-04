@@ -265,7 +265,7 @@ footer{background:var(--branco);border-top:1px solid var(--cinza-linha);text-ali
   </div>
   <div class="state-code">
     Procure no código a linha:<br>
-    <strong>const SCRIPT_URL = "COLE_AQUI..."</strong><br>
+    <strong>const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxETBc88M6_CGlfEkyfYm5avF7M4fPiISIE0QXjTHOJhoA7xsznEIrHItGwYL-IJZFM/exec"</strong><br>
     e substitua pelo link do seu Apps Script.
   </div>
 </div>
@@ -276,7 +276,7 @@ footer{background:var(--branco);border-top:1px solid var(--cinza-linha);text-ali
   <div class="logo-area">
     <!--
       LOGO: substitua o bloco <svg> abaixo pela sua logo.
-      Exemplo: <img src="URL_DA_SUA_LOGO" style="width:44px;height:44px;object-fit:contain;">
+      Exemplo: <img src="https://1drv.ms/i/c/1248F25D1EB3A40C/IQBW805LvzRCT5Il-LscJB68AfuQv_jdz0bXSp7BYBFbBCE?e=8QD0Oe"width:44px;height:44px;object-fit:contain;">
     -->
     <svg class="logo-svg" viewBox="0 0 54 54" fill="none">
       <rect x="3"  y="8"  width="7"  height="38" fill="rgb(56,87,59)"/>
