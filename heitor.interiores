@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portal do Cliente | Heitor Fernandes</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Raleway:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --verde-escuro: rgb(56,87,59);
+  --verde-medio:  rgb(68,97,71);
+  --verde-claro:  rgb(91,119,95);
+  --dourado:      rgb(188,158,86);
+  --cinza-texto:  rgb(119,119,119);
+  --cinza-linha:  rgb(216,216,211);
+  --cinza-bg:     rgb(241,241,236);
+  --verde-borda:  rgb(214,227,216);
+  --vermelho:     rgb(230,87,59);
+  --cinza-barra:  rgb(210,210,210);
+  --branco:       #ffffff;
+  --fundo:        #f9f9f6;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Montserrat',sans-serif;background:var(--fundo);color:#2a2a2a;min-height:100vh}
+
+/* ── Telas de estado ── */
+#loading-screen,#error-screen,#config-screen{
+  position:fixed;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;background:var(--fundo);z-index:9999;gap:14px;padding:32px;text-align:center
+}
+#loading-screen .spin{width:36px;height:36px;border:3px solid var(--verde-borda);border-top-color:var(--verde-escuro);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#loading-screen p{font-size:13px;color:var(--cinza-texto)}
+#error-screen,#config-screen{display:none}
+.state-logo{font-weight:700;font-size:18px;color:var(--verde-escuro);letter-spacing:.04em;margin-bottom:4px}
+.state-sub{font-size:11px;color:var(--cinza-texto);text-transform:uppercase;letter-spacing:.08em;margin-bottom:20px}
+.state-icon{font-size:40px;margin-bottom:8px}
+.state-title{font-size:17px;font-weight:600;color:var(--verde-escuro);margin-bottom:6px}
+.state-msg{font-size:13px;color:var(--cinza-texto);line-height:1.6;max-width:340px}
+.state-msg a{color:var(--verde-escuro)}
+.state-code{background:var(--cinza-bg);border:1px solid var(--cinza-linha);border-radius:4px;padding:10px 16px;font-size:12px;color:var(--cinza-texto);margin-top:12px;word-break:break-all;max-width:400px;line-height:1.6}
+
+/* ── Cabeçalho ── */
+header{background:var(--branco);border-bottom:1px solid var(--cinza-linha);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.logo-area{display:flex;align-items:center;gap:10px;min-width:0}
+.logo-svg{width:44px;height:44px;flex-shrink:0}
+.logo-name-block h1{font-weight:700;font-size:16px;color:var(--verde-escuro);letter-spacing:.04em;line-height:1.1}
+.logo-name-block p{font-weight:400;font-size:10px;color:var(--cinza-texto);letter-spacing:.08em;text-transform:uppercase}
+.header-right{text-align:right;flex-shrink:0}
+.portal-label{font-size:9px;font-weight:400;color:var(--cinza-texto);text-transform:uppercase;letter-spacing:.1em}
+.client-name{font-family:'Raleway',sans-serif;font-size:15px;font-weight:600;color:var(--verde-escuro)}
+
+/* ── Navegação ── */
+nav{background:var(--branco);border-bottom:1px solid var(--cinza-linha);padding:0 16px;display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch}
+nav::-webkit-scrollbar{display:none}
+.tab-btn{font-size:11px;font-weight:400;color:var(--cinza-texto);text-transform:uppercase;letter-spacing:.08em;padding:13px 16px;border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;transition:color .2s,border-color .2s;position:relative;top:1px;white-space:nowrap;flex-shrink:0}
+.tab-btn.active{font-weight:600;color:var(--verde-escuro);border-bottom:2px solid var(--verde-escuro)}
+
+/* ── Layout principal ── */
+main{max-width:960px;margin:0 auto;padding:20px 16px 80px}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* ── Componentes base ── */
+.diamond{display:inline-block;width:10px;height:10px;transform:rotate(45deg);flex-shrink:0}
+.section-header{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.section-title{font-size:11px;font-weight:600;color:var(--verde-escuro);text-transform:uppercase;letter-spacing:.1em}
+.progresso-title{font-size:11px;font-weight:600;color:var(--cinza-texto);text-transform:uppercase;letter-spacing:.1em}
+.section-desc{font-size:12px;font-weight:500;color:var(--cinza-texto);margin-bottom:20px}
+.divider{border:none;border-top:1px solid var(--cinza-linha);margin:20px 0}
+.card{background:var(--branco);border:1px solid var(--verde-borda);border-radius:4px;padding:16px 20px;margin-bottom:14px}
+
+/* ── Badges ── */
+.badge{display:inline-block;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;padding:4px 9px;border-radius:2px;white-space:nowrap}
+.badge-andamento{background:var(--dourado);color:var(--branco)}
+.badge-concluido{background:var(--verde-escuro);color:var(--branco)}
+.badge-pendente{background:var(--cinza-bg);color:var(--cinza-texto);border:1px solid var(--cinza-linha)}
+.badge-aprovado{background:var(--verde-borda);color:var(--verde-escuro)}
+.badge-analise{background:var(--dourado);color:var(--branco)}
+.badge-confirmado{background:var(--verde-escuro);color:var(--branco)}
+.badge-atraso{background:var(--vermelho);color:var(--branco)}
+.badge-aberto{background:var(--cinza-bg);color:var(--cinza-texto);border:1px solid var(--cinza-linha)}
+
+/* ── Barra de progresso ── */
+.progress-bar-wrap{background:var(--cinza-barra);border-radius:99px;height:6px;width:100%;overflow:hidden;margin:6px 0}
+.progress-bar-fill{height:100%;background:var(--dourado);border-radius:99px}
+
+/* ── Rodapé ── */
+footer{background:var(--branco);border-top:1px solid var(--cinza-linha);text-align:center;padding:14px 16px}
+.footer-links{display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap}
+.footer-link{display:flex;align-items:center;gap:7px;text-decoration:none;font-family:'Raleway',sans-serif;font-weight:500;font-size:12px;color:var(--cinza-texto);transition:color .2s}
+.footer-link:hover{color:var(--verde-escuro)}
+.footer-icon{width:17px;height:17px;fill:var(--verde-escuro);flex-shrink:0}
+
+/* ════════════════════════════
+   ABA 1 — VISÃO GERAL
+════════════════════════════ */
+.hero-banner{background:var(--verde-escuro);border-radius:6px;padding:22px 20px 22px 24px;margin-bottom:16px;display:flex;align-items:flex-start;justify-content:space-between;position:relative;overflow:hidden}
+.hero-left{flex:1;min-width:0;padding-right:10px}
+.hero-left .hero-proposta{font-size:9px;font-weight:600;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px}
+.hero-left .hero-client{font-family:'Raleway',sans-serif;font-size:28px;font-weight:600;color:var(--branco);line-height:1.1;margin-bottom:6px}
+.hero-left .hero-projeto{font-size:10px;font-weight:400;color:rgba(255,255,255,.7);letter-spacing:.08em;text-transform:uppercase;margin-bottom:14px}
+.hero-pills{display:flex;gap:8px;flex-wrap:wrap}
+.hero-pill{font-size:10px;font-weight:500;color:rgba(255,255,255,.8);background:rgba(255,255,255,.12);padding:4px 10px;border-radius:2px}
+.hero-diamonds{flex-shrink:0;align-self:center}
+
+.progress-info-row{display:flex;justify-content:space-between;align-items:center;margin-top:6px}
+.progress-steps-label{font-size:12px;font-weight:400;color:var(--cinza-texto)}
+.progress-pct{font-size:14px;font-weight:600;color:var(--cinza-texto)}
+
+.etapa-atual-card{background:var(--branco);border:1px solid var(--verde-borda);border-radius:4px;padding:16px 20px;margin-bottom:16px}
+.etapa-atual-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px}
+.etapa-label{font-size:10px;font-weight:600;color:var(--cinza-texto);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
+.etapa-nome{font-size:20px;font-weight:500;color:var(--verde-escuro)}
+.etapa-atual-badges{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0}
+.previsao-box{display:inline-block;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;padding:4px 9px;border-radius:2px;background:rgb(210,210,210);color:#555;white-space:nowrap}
+.etapa-subitem{font-size:12px;font-weight:400;color:var(--verde-escuro)}
+
+/* Cards de resumo — empilham no mobile */
+.resumo-grid{display:flex;gap:8px;margin-bottom:20px}
+.resumo-item{flex:1;padding:14px 16px;background:var(--cinza-bg);border:1px solid var(--verde-borda);border-radius:4px;min-width:0}
+.resumo-item.dark{background:var(--verde-escuro);border-color:var(--verde-escuro)}
+.resumo-label{font-size:9px;font-weight:500;color:var(--cinza-texto);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.resumo-item.dark .resumo-label{color:rgba(255,255,255,.7)}
+.resumo-value{font-family:'Raleway',sans-serif;font-size:16px;font-weight:600;color:var(--verde-escuro);word-break:break-word}
+.resumo-item.dark .resumo-value{color:var(--branco)}
+
+/* ════════════════════════════
+   ABA 2 — CRONOGRAMA
+════════════════════════════ */
+.cronograma-stage{display:flex;gap:14px;margin-bottom:8px;position:relative}
+.cronograma-stage:not(:last-child)::before{content:'';position:absolute;left:16px;top:38px;bottom:-8px;width:2px;background:var(--cinza-linha)}
+.stage-number{width:34px;height:34px;transform:rotate(45deg);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.stage-number span{transform:rotate(-45deg);font-size:11px;font-weight:700;color:var(--branco)}
+.stage-concluido .stage-number{background:var(--verde-escuro)}
+.stage-andamento .stage-number{background:var(--dourado)}
+.stage-pendente .stage-number{background:var(--cinza-barra)}
+.stage-pendente .stage-number span{color:var(--cinza-texto)}
+.stage-content{flex:1;padding-bottom:20px;min-width:0}
+.stage-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;gap:12px}
+.stage-name{font-size:15px;font-weight:600;color:var(--verde-escuro);margin-bottom:2px}
+.stage-andamento .stage-name{color:var(--dourado)}
+.stage-pendente .stage-name{color:var(--cinza-texto)}
+.stage-prazo{font-size:11px;font-weight:500;color:var(--cinza-texto);margin-bottom:10px}
+.stage-badge-col{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+.stage-date-below{font-size:11px;color:var(--cinza-texto);text-align:right}
+.date-normal{font-weight:400}.date-bold{font-weight:700}
+.stage-items-card{background:var(--cinza-bg);border:1px solid var(--cinza-linha);border-radius:4px;padding:10px 14px;display:flex;flex-direction:column;gap:10px}
+.stage-item-row{display:flex;align-items:center;gap:10px}
+.item-diamond{width:9px;height:9px;transform:rotate(45deg);flex-shrink:0}
+.item-diamond.concluido{background:var(--verde-escuro)}
+.item-diamond.andamento{background:var(--dourado)}
+.item-diamond.pendente{background:var(--cinza-texto)}
+.item-text{font-size:12px;font-weight:500;color:#2a2a2a;flex:1}
+.item-text.andamento-text,.item-text.pendente-text{color:var(--cinza-texto)}
+
+/* ════════════════════════════
+   ABA 3 — ARQUIVOS
+════════════════════════════ */
+.pasta-titulo{display:inline-block;font-size:10px;font-weight:600;color:var(--branco);background:var(--verde-escuro);text-transform:uppercase;letter-spacing:.1em;padding:4px 12px;margin-bottom:8px;border-radius:2px}
+.arquivo-row{background:var(--branco);border:1px solid var(--cinza-linha);border-radius:4px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;cursor:pointer;transition:border-color .2s}
+.arquivo-row:hover,.arquivo-row:active{border-color:var(--verde-escuro)}
+.tipo-badge{display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:4px;font-size:10px;font-weight:700;flex-shrink:0}
+.tipo-pdf{background:rgb(244,237,224);color:rgb(188,158,86)}
+.tipo-jpg,.tipo-png{background:var(--verde-borda);color:var(--verde-claro)}
+.tipo-dwg{background:var(--cinza-bg);color:var(--cinza-texto)}
+.arquivo-info{flex:1;min-width:0}
+.arquivo-nome{font-size:12px;font-weight:500;color:#2a2a2a;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.arquivo-data{font-size:11px;font-weight:400;color:var(--cinza-texto)}
+.pasta-section{margin-bottom:22px}
+.arq-section-diamond{display:inline-block;width:10px;height:10px;transform:rotate(45deg);background:var(--verde-escuro);flex-shrink:0}
+
+/* ════════════════════════════
+   ABA 4 — FINANCEIRO
+════════════════════════════ */
+.pagamento-card{background:var(--cinza-bg);border:1px solid var(--verde-borda);border-radius:4px;padding:12px 16px;margin-bottom:16px}
+.pagamento-title{font-size:10px;font-weight:600;color:var(--dourado);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+.pagamento-desc{font-family:'Raleway',sans-serif;font-size:12px;font-weight:500;color:var(--cinza-texto)}
+.fin-resumo-grid{display:flex;gap:8px;margin-bottom:14px}
+.fin-progress-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-family:'Raleway',sans-serif;font-size:12px;font-weight:500;color:var(--cinza-texto)}
+.parcelas-header{display:flex;justify-content:space-between;align-items:center;margin:18px 0 10px}
+.parcelas-label{display:inline-block;font-size:10px;font-weight:600;background:var(--verde-escuro);color:var(--branco);padding:5px 12px;border-radius:2px;text-transform:uppercase;letter-spacing:.08em}
+.btn-pix{font-size:10px;font-weight:600;color:var(--verde-escuro);background:var(--branco);border:1px solid var(--verde-escuro);padding:6px 12px;border-radius:2px;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:background .2s,color .2s;-webkit-tap-highlight-color:transparent}
+.btn-pix:hover,.btn-pix:active{background:var(--verde-escuro);color:var(--branco)}
+.parcela-row{background:var(--branco);border:1px solid var(--cinza-linha);border-radius:4px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.parcela-diamond{width:11px;height:11px;transform:rotate(45deg);flex-shrink:0}
+.parcela-info{flex:1;min-width:0}
+.parcela-nome{font-family:'Raleway',sans-serif;font-size:12px;font-weight:600;color:var(--verde-escuro);margin-bottom:2px}
+.parcela-nome.atraso{color:var(--vermelho)}
+.parcela-nome.aberto{color:var(--cinza-texto)}
+.parcela-venc{font-size:10px;font-weight:500;color:var(--cinza-texto)}
+.parcela-direita{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.parcela-valor{font-family:'Raleway',sans-serif;font-size:13px;font-weight:600;color:var(--verde-escuro)}
+.fin-nota{font-size:11px;font-weight:400;font-style:italic;color:var(--cinza-texto);margin-top:12px;text-align:center}
+
+/* ── PIX Popup ── */
+.popup-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:999;align-items:center;justify-content:center;padding:20px}
+.popup-overlay.show{display:flex}
+.popup-box{background:var(--branco);border:1px solid var(--verde-escuro);border-radius:6px;padding:24px;max-width:320px;width:100%;text-align:center}
+.popup-title{font-weight:700;font-size:12px;color:var(--verde-escuro);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
+.popup-key{font-weight:700;font-size:14px;color:var(--verde-escuro);background:var(--cinza-bg);border:1px solid var(--verde-escuro);border-radius:4px;padding:10px 14px;margin-bottom:12px;cursor:pointer;word-break:break-all;-webkit-tap-highlight-color:transparent}
+.popup-hint{font-size:11px;color:var(--cinza-texto);margin-bottom:14px}
+.popup-close{font-size:11px;font-weight:600;color:var(--cinza-texto);background:none;border:1px solid var(--cinza-linha);border-radius:2px;padding:7px 20px;cursor:pointer}
+
+/* ══════════════════════════════════
+   RESPONSIVIDADE — MOBILE
+══════════════════════════════════ */
+@media (max-width: 600px) {
+
+  /* Hero: esconde losangos no mobile para ganhar espaço */
+  .hero-diamonds { display: none; }
+  .hero-left .hero-client { font-size: 22px; }
+
+  /* Cards de resumo: empilha em coluna no mobile */
+  .resumo-grid { flex-direction: column; }
+  .fin-resumo-grid { flex-direction: column; }
+
+  /* Etapa atual: empilha badge abaixo */
+  .etapa-atual-top { flex-direction: column; gap: 10px; }
+  .etapa-atual-badges { flex-direction: row; align-items: center; }
+
+  /* Cronograma: badge e data lado a lado no mobile */
+  .stage-top { flex-wrap: wrap; }
+  .stage-badge-col { flex-direction: row; align-items: center; gap: 8px; }
+  .stage-date-below { text-align: left; }
+
+  /* Parcelas: valor e badge empilham */
+  .parcela-direita { flex-direction: column; align-items: flex-end; gap: 4px; }
+  .parcela-row { flex-wrap: wrap; }
+
+  /* Arquivo: nome pode quebrar linha */
+  .arquivo-nome { white-space: normal; }
+}
+</style>
+</head>
+<body>
+
+<!-- Tela de carregamento -->
+<div id="loading-screen">
+  <div class="spin"></div>
+  <p>Carregando seu portal…</p>
+</div>
+
+<!-- Tela de erro: link inválido ou código não encontrado -->
+<div id="error-screen">
+  <div class="state-logo">HEITOR FERNANDES</div>
+  <div class="state-sub">Designer de Interiores</div>
+  <div class="state-icon">🔍</div>
+  <div class="state-title">Projeto não encontrado</div>
+  <div class="state-msg">
+    Este link não corresponde a nenhum projeto ativo.<br>
+    Entre em contato pelo <a href="https://wa.me/5586988044155">WhatsApp</a> para receber o link correto.
+  </div>
+</div>
+
+<!-- Tela exibida enquanto o script ainda não foi configurado -->
+<div id="config-screen">
+  <div class="state-logo">HEITOR FERNANDES</div>
+  <div class="state-sub">Designer de Interiores · Portal do Cliente</div>
+  <div class="state-icon">⚙️</div>
+  <div class="state-title">Configuração pendente</div>
+  <div class="state-msg">
+    O portal ainda não foi conectado à planilha.<br>
+    Siga o arquivo <strong>como-configurar.txt</strong> e cole a URL do Apps Script no código.
+  </div>
+  <div class="state-code">
+    Procure no código a linha:<br>
+    <strong>const SCRIPT_URL = "COLE_AQUI..."</strong><br>
+    e substitua pelo link do seu Apps Script.
+  </div>
+</div>
+
+<!-- ════════ INTERFACE PRINCIPAL (oculta até carregar) ════════ -->
+
+<header style="display:none" id="main-header">
+  <div class="logo-area">
+    <!--
+      LOGO: substitua o bloco <svg> abaixo pela sua logo.
+      Exemplo: <img src="URL_DA_SUA_LOGO" style="width:44px;height:44px;object-fit:contain;">
+    -->
+    <svg class="logo-svg" viewBox="0 0 54 54" fill="none">
+      <rect x="3"  y="8"  width="7"  height="38" fill="rgb(56,87,59)"/>
+      <rect x="3"  y="8"  width="22" height="7"  fill="rgb(56,87,59)"/>
+      <rect x="3"  y="26" width="16" height="6"  fill="rgb(56,87,59)"/>
+      <rect x="33" y="8"  width="7"  height="38" fill="rgb(56,87,59)"/>
+      <rect x="33" y="8"  width="19" height="7"  fill="rgb(56,87,59)"/>
+      <rect x="33" y="38" width="19" height="7"  fill="rgb(56,87,59)"/>
+    </svg>
+    <div class="logo-name-block">
+      <h1>HEITOR FERNANDES</h1>
+      <p>Designer de Interiores</p>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="portal-label">Portal do Cliente</div>
+    <div class="client-name" id="hdr-client"></div>
+  </div>
+</header>
+
+<nav style="display:none" id="main-nav">
+  <button class="tab-btn active" onclick="abrirAba('visao',this)">Visão Geral</button>
+  <button class="tab-btn" onclick="abrirAba('cronograma',this)">Cronograma</button>
+  <button class="tab-btn" onclick="abrirAba('arquivos',this)">Arquivos</button>
+  <button class="tab-btn" onclick="abrirAba('financeiro',this)">Financeiro</button>
+</nav>
+
+<main style="display:none" id="main-content">
+
+  <!-- VISÃO GERAL -->
+  <div id="tab-visao" class="tab-content active">
+
+    <div class="hero-banner">
+      <div class="hero-left">
+        <div class="hero-proposta">Proposta Nº <span id="vg-proposta"></span></div>
+        <div class="hero-client" id="vg-client"></div>
+        <div class="hero-projeto" id="vg-projeto"></div>
+        <div class="hero-pills">
+          <span class="hero-pill">Atualizado hoje</span>
+          <span class="hero-pill" id="vg-pct-pill"></span>
+        </div>
+      </div>
+      <div class="hero-diamonds">
+        <svg width="90" height="90" viewBox="0 0 110 110">
+          <rect x="10" y="10" width="28" height="28" transform="rotate(45 24 24)" fill="none" stroke="rgb(91,119,95)" stroke-width="2" opacity="0.5"/>
+          <rect x="10" y="46" width="28" height="28" transform="rotate(45 24 60)" fill="none" stroke="rgb(91,119,95)" stroke-width="2" opacity="0.5"/>
+          <rect x="10" y="82" width="28" height="28" transform="rotate(45 24 96)" fill="none" stroke="rgb(91,119,95)" stroke-width="2" opacity="0.5"/>
+          <rect x="62" y="46" width="28" height="28" transform="rotate(45 76 60)" fill="none" stroke="rgb(91,119,95)" stroke-width="2" opacity="0.5"/>
+          <rect x="62" y="82" width="28" height="28" transform="rotate(45 76 96)" fill="none" stroke="rgb(91,119,95)" stroke-width="2" opacity="0.5"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="card progress-section">
+      <div class="section-header">
+        <div class="diamond" style="background:var(--dourado)"></div>
+        <span class="progresso-title">Progresso Geral</span>
+      </div>
+      <div class="progress-bar-wrap" style="margin-top:10px">
+        <div class="progress-bar-fill" id="vg-barra" style="width:0%"></div>
+      </div>
+      <div class="progress-info-row">
+        <span class="progress-steps-label" id="vg-etapas-label"></span>
+        <span class="progress-pct" id="vg-pct"></span>
+      </div>
+    </div>
+
+    <div class="etapa-atual-card">
+      <div class="etapa-atual-top">
+        <div>
+          <div class="etapa-label">Etapa Atual</div>
+          <div class="etapa-nome" id="vg-etapa-nome"></div>
+        </div>
+        <div class="etapa-atual-badges">
+          <span class="badge badge-andamento">Em Andamento</span>
+          <span class="previsao-box" id="vg-previsao"></span>
+        </div>
+      </div>
+      <div class="etapa-subitem" id="vg-subitem"></div>
+    </div>
+
+    <div class="resumo-grid">
+      <div class="resumo-item">
+        <div class="resumo-label">Investimento Total</div>
+        <div class="resumo-value" id="vg-invest"></div>
+      </div>
+      <div class="resumo-item dark">
+        <div class="resumo-label">Total Pago</div>
+        <div class="resumo-value" id="vg-pago"></div>
+      </div>
+      <div class="resumo-item">
+        <div class="resumo-label">Arquivos</div>
+        <div class="resumo-value" id="vg-arquivos"></div>
+      </div>
+    </div>
+
+  </div><!-- /visão geral -->
+
+  <!-- CRONOGRAMA -->
+  <div id="tab-cronograma" class="tab-content">
+    <div class="section-header">
+      <div class="diamond" style="background:var(--verde-borda)"></div>
+      <span class="section-title">Cronograma</span>
+    </div>
+    <div class="section-desc">Cada etapa do projeto organizada de forma clara e transparente.</div>
+    <hr class="divider">
+    <div id="crono-container"></div>
+  </div>
+
+  <!-- ARQUIVOS -->
+  <div id="tab-arquivos" class="tab-content">
+    <div class="section-header">
+      <div class="arq-section-diamond"></div>
+      <span class="section-title">Arquivos</span>
+    </div>
+    <div class="section-desc">Acesse, visualize e faça o download de todas as documentações e entregáveis do projeto.</div>
+    <hr class="divider">
+    <div id="arq-container"></div>
+  </div>
+
+  <!-- FINANCEIRO -->
+  <div id="tab-financeiro" class="tab-content">
+    <div class="section-header">
+      <div class="diamond" style="background:var(--dourado)"></div>
+      <span class="section-title">Resumo Financeiro</span>
+    </div>
+    <div class="section-desc">Consulte o fluxo de parcelas, valores totais e realize pagamentos diretamente via PIX.</div>
+    <hr class="divider">
+
+    <div class="pagamento-card">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <div class="diamond" style="background:var(--dourado);width:8px;height:8px"></div>
+        <span class="pagamento-title">Forma de Pagamento Definida</span>
+      </div>
+      <div class="pagamento-desc" id="fin-forma"></div>
+    </div>
+
+    <div class="fin-resumo-grid">
+      <div class="resumo-item"><div class="resumo-label">Investimento Total</div><div class="resumo-value" id="fin-invest"></div></div>
+      <div class="resumo-item dark"><div class="resumo-label">Total Pago</div><div class="resumo-value" id="fin-pago"></div></div>
+      <div class="resumo-item"><div class="resumo-label">Saldo Remanescente</div><div class="resumo-value" id="fin-saldo" style="color:var(--verde-escuro)"></div></div>
+    </div>
+
+    <div class="fin-progress-row">
+      <span id="fin-pago-pct"></span>
+      <span id="fin-total-label"></span>
+    </div>
+    <div class="progress-bar-wrap" style="margin-bottom:18px">
+      <div class="progress-bar-fill" id="fin-barra" style="width:0%"></div>
+    </div>
+
+    <div class="parcelas-header">
+      <span class="parcelas-label">Parcelas</span>
+      <button class="btn-pix" onclick="abrirPix()">Copiar Chave PIX</button>
+    </div>
+    <div id="fin-parcelas"></div>
+    <div class="fin-nota">Após efetuar pagamentos, o sistema leva até 24hs para ser atualizado.</div>
+  </div>
+
+</main>
+
+<footer style="display:none" id="main-footer">
+  <div class="footer-links">
+    <a class="footer-link" href="https://wa.me/5586988044155" target="_blank">
+      <svg class="footer-icon" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      (86) 9 8804-4155
+    </a>
+    <a class="footer-link" href="https://www.instagram.com/heitor.interiores?igsh=MThqZzkyOXRuZHpyag%3D%3D&utm_source=qr" target="_blank">
+      <svg class="footer-icon" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+      @heitor.interiores
+    </a>
+  </div>
+</footer>
+
+<!-- PIX Popup -->
+<div class="popup-overlay" id="pix-popup">
+  <div class="popup-box">
+    <div class="popup-title">Chave PIX</div>
+    <div class="popup-key" id="pix-key" onclick="copiarPix()">heitor.interiores@gmail.com</div>
+    <div class="popup-hint">Toque na chave para copiar</div>
+    <button class="popup-close" onclick="fecharPix()">Fechar</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+//  ★  ÚNICA CONFIGURAÇÃO NECESSÁRIA  ★
+//  Cole aqui a URL do seu Google Apps Script.
+//  Siga o arquivo como-configurar.txt para obter essa URL.
+// ══════════════════════════════════════════════════════════════
+const SCRIPT_URL = "COLE_AQUI_A_URL_DO_SEU_APPS_SCRIPT";
+// ══════════════════════════════════════════════════════════════
+
+// ── Utilitários ──
+function fmt(v){ return Number(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}) }
+function show(id){ document.getElementById(id).style.display='' }
+function hide(id){ document.getElementById(id).style.display='none' }
+
+function getClientCode(){
+  return new URLSearchParams(window.location.search).get('c');
+}
+
+async function fetchDados(codigo){
+  const url = SCRIPT_URL + '?c=' + encodeURIComponent(codigo);
+  const resp = await fetch(url);
+  if(!resp.ok) throw new Error('HTTP '+resp.status);
+  return resp.json();
+}
+
+// ── Render: Visão Geral ──
+function renderVisaoGeral(d){
+  const conc  = [d.status_ep1,d.status_ep2,d.status_ep3,d.status_ep4].filter(s=>s==='concluido').length;
+  const total = 4;
+  const pct   = Math.round(conc/total*100);
+  const totalArq = Number(d.total_arquivos)||0;
+
+  document.getElementById('hdr-client').textContent   = d.nome_cliente;
+  document.getElementById('vg-proposta').textContent  = d.numero_proposta;
+  document.getElementById('vg-client').textContent    = d.nome_cliente;
+  document.getElementById('vg-projeto').textContent   = d.tipo_projeto;
+  document.getElementById('vg-pct-pill').textContent  = pct+'% concluído';
+  document.getElementById('vg-barra').style.width     = pct+'%';
+  document.getElementById('vg-etapas-label').textContent = conc+' de '+total+' etapas concluídas';
+  document.getElementById('vg-pct').textContent       = pct+'%';
+  document.getElementById('vg-etapa-nome').textContent= d.etapa_atual_nome||'';
+  document.getElementById('vg-subitem').textContent   = d.etapa_atual_subitem||'';
+  document.getElementById('vg-invest').textContent    = fmt(d.investimento_total);
+  document.getElementById('vg-pago').textContent      = fmt(d.total_pago);
+  document.getElementById('vg-arquivos').textContent  = totalArq+' unidades';
+  document.getElementById('vg-previsao').textContent  = 'Previsão: '+(d.previsao_etapa_atual||'');
+}
+
+// ── Render: Cronograma ──
+function renderCronograma(d){
+  const etapas = [
+    {n:'01',nome:d.ep1_nome,prazo:d.ep1_prazo,data:d.ep1_data,status:d.status_ep1,subitens:d.ep1_subitens},
+    {n:'02',nome:d.ep2_nome,prazo:d.ep2_prazo,data:d.ep2_data,status:d.status_ep2,subitens:d.ep2_subitens},
+    {n:'03',nome:d.ep3_nome,prazo:d.ep3_prazo,data:d.ep3_data,status:d.status_ep3,subitens:d.ep3_subitens},
+    {n:'04',nome:d.ep4_nome,prazo:d.ep4_prazo,data:d.ep4_data,status:d.status_ep4,subitens:d.ep4_subitens},
+  ];
+  const badgeCfg={
+    concluido:{cls:'badge-concluido',label:'Concluído'},
+    andamento:{cls:'badge-andamento',label:'Em Andamento'},
+    pendente: {cls:'badge-pendente', label:'Pendente'},
+  };
+  document.getElementById('crono-container').innerHTML=etapas.map(e=>{
+    const st=e.status||'pendente';
+    const bc=badgeCfg[st]||badgeCfg.pendente;
+    const dataStr=st==='concluido'?e.data:(e.data==='A ser agendado'?'A ser agendado':'Previsão: '+e.data);
+    const siHtml=(e.subitens||[]).map(si=>{
+      const dc=si.status==='concluido'?'concluido':si.status==='andamento'?'andamento':'pendente';
+      const tc=si.status==='concluido'?'':'andamento-text';
+      return `<div class="stage-item-row"><div class="item-diamond ${dc}"></div><span class="item-text ${tc}">${si.nome}</span></div>`;
+    }).join('');
+    return `<div class="cronograma-stage stage-${st}">
+      <div class="stage-number"><span>${e.n}</span></div>
+      <div class="stage-content">
+        <div class="stage-top">
+          <div><div class="stage-name">${e.nome||''}</div><div class="stage-prazo">${e.prazo||''}</div></div>
+          <div class="stage-badge-col">
+            <span class="badge ${bc.cls}">${bc.label}</span>
+            <div class="stage-date-below">${dataStr||''}</div>
+          </div>
+        </div>
+        <div class="stage-items-card">${siHtml||'<span style="font-size:12px;color:var(--cinza-texto)">Nenhum subitem cadastrado</span>'}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Render: Arquivos ──
+function renderArquivos(d){
+  const pastas=d.pastas||[];
+  if(!pastas.length){
+    document.getElementById('arq-container').innerHTML='<p style="color:var(--cinza-texto);font-size:13px">Nenhum arquivo disponível ainda.</p>';
+    return;
+  }
+  document.getElementById('arq-container').innerHTML=pastas.map(p=>{
+    const arqs=(p.arquivos||[]).map(a=>{
+      const tc='tipo-'+(a.tipo||'pdf').toLowerCase();
+      const bc=a.status==='aprovado'?'badge-aprovado':'badge-analise';
+      const bl=a.status==='aprovado'?'Aprovado':'Em Análise';
+      return `<a class="arquivo-row" href="${a.link||'#'}" target="_blank">
+        <div class="tipo-badge ${tc}">${a.tipo||'?'}</div>
+        <div class="arquivo-info"><div class="arquivo-nome">${a.nome||''}</div><div class="arquivo-data">${a.data||''}</div></div>
+        <span class="badge ${bc}">${bl}</span></a>`;
+    }).join('');
+    return `<div class="pasta-section"><div class="pasta-titulo">${p.titulo||''}</div>${arqs}</div>`;
+  }).join('');
+}
+
+// ── Render: Financeiro ──
+function renderFinanceiro(d){
+  const inv  = Number(d.investimento_total)||0;
+  const pago = Number(d.total_pago)||0;
+  const saldo= inv-pago;
+  const pct  = inv>0?Math.round(pago/inv*100):0;
+
+  document.getElementById('fin-forma').textContent     = d.forma_pagamento||'';
+  document.getElementById('fin-invest').textContent    = fmt(inv);
+  document.getElementById('fin-pago').textContent      = fmt(pago);
+  document.getElementById('fin-saldo').textContent     = fmt(saldo);
+  document.getElementById('fin-pago-pct').textContent  = 'Pago: '+pct+'%';
+  document.getElementById('fin-total-label').textContent = 'Total: '+fmt(inv);
+  document.getElementById('fin-barra').style.width     = pct+'%';
+
+  const dMap={confirmado:'background:var(--verde-escuro)',atraso:'background:var(--vermelho)',aberto:'background:transparent;border:2px solid rgb(197,197,191)'};
+  const cMap={
+    confirmado:{bg:'var(--verde-escuro)',txt:'#fff',label:'Confirmado'},
+    atraso:    {bg:'var(--vermelho)',    txt:'#fff',label:'Em atraso'},
+    aberto:    {bg:'var(--cinza-bg)',    txt:'var(--cinza-texto)',label:'Em aberto'},
+  };
+  document.getElementById('fin-parcelas').innerHTML=(d.parcelas||[]).map(p=>{
+    const cm=cMap[p.status]||cMap.aberto;
+    const nc=p.status==='atraso'?'atraso':p.status==='aberto'?'aberto':'';
+    return `<div class="parcela-row">
+      <div class="parcela-diamond" style="${dMap[p.status]||dMap.aberto}"></div>
+      <div class="parcela-info">
+        <div class="parcela-nome ${nc}">${p.nome||''}</div>
+        <div class="parcela-venc">Vencimento: ${p.vencimento||''}</div>
+      </div>
+      <div class="parcela-direita">
+        <span class="parcela-valor">${fmt(p.valor)}</span>
+        <span class="badge" style="background:${cm.bg};color:${cm.txt}">${cm.label}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Fluxo principal ──
+function mostrarPortal(d){
+  renderVisaoGeral(d);
+  renderCronograma(d);
+  renderArquivos(d);
+  renderFinanceiro(d);
+  hide('loading-screen');
+  show('main-header');
+  show('main-nav');
+  show('main-content');
+  show('main-footer');
+}
+
+async function init(){
+  // Detecta se a URL do script ainda não foi configurada
+  if(SCRIPT_URL === "COLE_AQUI_A_URL_DO_SEU_APPS_SCRIPT"){
+    hide('loading-screen');
+    show('config-screen');
+    return;
+  }
+
+  const codigo = getClientCode();
+  if(!codigo){
+    hide('loading-screen');
+    show('error-screen');
+    return;
+  }
+
+  try {
+    const dados = await fetchDados(codigo);
+    if(!dados || dados.erro){
+      hide('loading-screen');
+      show('error-screen');
+      return;
+    }
+    mostrarPortal(dados);
+  } catch(e){
+    hide('loading-screen');
+    show('error-screen');
+  }
+}
+
+function abrirAba(aba,btn){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+aba).classList.add('active');
+  btn.classList.add('active');
+}
+function abrirPix(){ document.getElementById('pix-popup').classList.add('show') }
+function fecharPix(){ document.getElementById('pix-popup').classList.remove('show') }
+function copiarPix(){
+  navigator.clipboard.writeText('heitor.interiores@gmail.com').then(()=>{
+    document.getElementById('pix-key').textContent='✓ Copiado!';
+    setTimeout(()=>{ document.getElementById('pix-key').textContent='heitor.interiores@gmail.com' },2000);
+  });
+}
+
+init();
+</script>
+</body>
+</html>
