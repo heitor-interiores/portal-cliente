@@ -1,632 +1,661 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Portal do Cliente | Heitor Fernandes</title>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Raleway:wght@400;500;600&display=swap" rel="stylesheet">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Portal do Cliente</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
 <style>
-:root{
-  --verde-escuro:rgb(56,87,59);--verde-claro:rgb(91,119,95);
-  --dourado:rgb(188,158,86);--cinza-texto:rgb(119,119,119);
-  --cinza-linha:rgb(216,216,211);--cinza-bg:rgb(241,241,236);
-  --verde-borda:rgb(214,227,216);--vermelho:rgb(230,87,59);
-  --cinza-barra:rgb(210,210,210);--branco:#fff;--fundo:#f9f9f6;
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Montserrat',sans-serif;background:var(--fundo);color:#2a2a2a;min-height:100vh}
+  :root {
+    --bg: #F7F5F2;
+    --surface: #FFFFFF;
+    --surface2: #F0EDE8;
+    --border: #E2DDD7;
+    --text: #1A1714;
+    --text-soft: #7A7269;
+    --accent: #8B6F47;
+    --accent-light: #F0E8DC;
+    --green: #4A7C59;
+    --green-bg: #EAF2ED;
+    --yellow: #8B7340;
+    --yellow-bg: #F5F0E4;
+    --red: #8B4A4A;
+    --red-bg: #F5EAEA;
+    --blue: #4A5F8B;
+    --blue-bg: #EAEEf5;
+    --radius: 12px;
+    --shadow: 0 2px 16px rgba(26,23,20,0.07);
+  }
 
-/* ── Telas de estado ── */
-#loading-screen,#error-screen,#config-screen{
-  position:fixed;inset:0;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  background:var(--fundo);z-index:9999;gap:12px;padding:32px;text-align:center
-}
-#error-screen,#config-screen{display:none}
-.spin{width:36px;height:36px;border:3px solid var(--verde-borda);
-  border-top-color:var(--verde-escuro);border-radius:50%;animation:spin .8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.state-logo{font-weight:700;font-size:17px;color:var(--verde-escuro);letter-spacing:.04em}
-.state-sub{font-size:10px;color:var(--cinza-texto);text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px}
-.state-icon{font-size:38px;margin-bottom:4px}
-.state-title{font-size:16px;font-weight:600;color:var(--verde-escuro);margin-bottom:6px}
-.state-msg{font-size:13px;color:var(--cinza-texto);line-height:1.6;max-width:340px}
-.state-msg a{color:var(--verde-escuro)}
-.state-code{background:var(--cinza-bg);border:1px solid var(--cinza-linha);border-radius:4px;
-  padding:10px 14px;font-size:11px;color:var(--cinza-texto);margin-top:12px;
-  word-break:break-all;max-width:380px;line-height:1.7;text-align:left}
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* ── Cabeçalho ── */
-header{background:var(--branco);border-bottom:1px solid var(--cinza-linha);
-  padding:13px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
-.logo-area{display:flex;align-items:center;gap:10px;min-width:0}
-.logo-svg{width:42px;height:42px;flex-shrink:0}
-.logo-name-block h1{font-weight:700;font-size:15px;color:var(--verde-escuro);letter-spacing:.04em;line-height:1.1}
-.logo-name-block p{font-weight:400;font-size:9px;color:var(--cinza-texto);letter-spacing:.08em;text-transform:uppercase}
-.header-right{text-align:right;flex-shrink:0}
-.portal-label{font-size:9px;color:var(--cinza-texto);text-transform:uppercase;letter-spacing:.1em}
-.client-name{font-family:'Raleway',sans-serif;font-size:14px;font-weight:600;color:var(--verde-escuro)}
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
 
-/* ── Navegação ── */
-nav{background:var(--branco);border-bottom:1px solid var(--cinza-linha);
-  padding:0 12px;display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch}
-nav::-webkit-scrollbar{display:none}
-.tab-btn{font-size:11px;font-weight:400;color:var(--cinza-texto);text-transform:uppercase;
-  letter-spacing:.07em;padding:13px 14px;border:none;background:none;cursor:pointer;
-  border-bottom:2px solid transparent;transition:color .2s,border-color .2s;
-  position:relative;top:1px;white-space:nowrap;flex-shrink:0;-webkit-tap-highlight-color:transparent}
-.tab-btn.active{font-weight:600;color:var(--verde-escuro);border-bottom:2px solid var(--verde-escuro)}
+  /* ---- LOADING ---- */
+  #loading {
+    position: fixed; inset: 0;
+    background: var(--bg);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 16px; z-index: 100;
+    transition: opacity 0.4s;
+  }
+  #loading.hide { opacity: 0; pointer-events: none; }
+  .loader-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px; font-weight: 300;
+    color: var(--accent); letter-spacing: 4px;
+  }
+  .loader-bar {
+    width: 120px; height: 2px;
+    background: var(--border); border-radius: 2px; overflow: hidden;
+  }
+  .loader-bar-inner {
+    height: 100%; width: 0; background: var(--accent);
+    animation: load 1.8s ease forwards;
+  }
+  @keyframes load { to { width: 100%; } }
 
-/* ── Main ── */
-main{max-width:960px;margin:0 auto;padding:18px 14px 80px}
-.tab-content{display:none}.tab-content.active{display:block}
+  /* ---- ERROR ---- */
+  #error-screen {
+    display: none; position: fixed; inset: 0;
+    background: var(--bg);
+    align-items: center; justify-content: center;
+    flex-direction: column; gap: 16px; text-align: center; padding: 32px;
+  }
+  #error-screen.show { display: flex; }
+  #error-screen h2 { font-family: 'Cormorant Garamond', serif; font-size: 28px; color: var(--accent); }
+  #error-screen p { color: var(--text-soft); font-size: 15px; max-width: 320px; line-height: 1.6; }
 
-/* ── Componentes ── */
-.diamond{display:inline-block;width:10px;height:10px;transform:rotate(45deg);flex-shrink:0}
-.section-header{display:flex;align-items:center;gap:8px;margin-bottom:4px}
-.section-title{font-size:10px;font-weight:600;color:var(--verde-escuro);text-transform:uppercase;letter-spacing:.1em}
-.progresso-title{font-size:10px;font-weight:600;color:var(--cinza-texto);text-transform:uppercase;letter-spacing:.1em}
-.section-desc{font-size:12px;font-weight:500;color:var(--cinza-texto);margin-bottom:18px}
-.divider{border:none;border-top:1px solid var(--cinza-linha);margin:18px 0}
-.card{background:var(--branco);border:1px solid var(--verde-borda);border-radius:4px;padding:14px 18px;margin-bottom:12px}
+  /* ---- HEADER ---- */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .header-brand {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px; font-weight: 400;
+    color: var(--accent); letter-spacing: 2px;
+  }
+  .header-client { font-size: 13px; color: var(--text-soft); text-align: right; }
+  .header-client strong { display: block; font-size: 15px; color: var(--text); font-weight: 500; margin-bottom: 2px; }
 
-/* Badges */
-.badge{display:inline-block;font-size:9px;font-weight:600;text-transform:uppercase;
-  letter-spacing:.06em;padding:4px 8px;border-radius:2px;white-space:nowrap}
-.badge-andamento{background:var(--dourado);color:var(--branco)}
-.badge-concluido{background:var(--verde-escuro);color:var(--branco)}
-.badge-pendente{background:var(--cinza-bg);color:var(--cinza-texto);border:1px solid var(--cinza-linha)}
-.badge-aprovado{background:var(--verde-borda);color:var(--verde-escuro)}
-.badge-analise{background:var(--dourado);color:var(--branco)}
-.badge-confirmado{background:var(--verde-escuro);color:var(--branco)}
-.badge-atraso{background:var(--vermelho);color:var(--branco)}
-.badge-aberto{background:var(--cinza-bg);color:var(--cinza-texto);border:1px solid var(--cinza-linha)}
+  /* ---- TABS ---- */
+  .tabs {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex; overflow-x: auto; padding: 0 24px;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    padding: 14px 20px; font-size: 13px; font-weight: 500;
+    color: var(--text-soft); cursor: pointer; white-space: nowrap;
+    border-bottom: 2px solid transparent; transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 
-/* Barra */
-.progress-bar-wrap{background:var(--cinza-barra);border-radius:99px;height:6px;width:100%;overflow:hidden;margin:6px 0}
-.progress-bar-fill{height:100%;background:var(--dourado);border-radius:99px}
+  /* ---- CONTENT ---- */
+  #app { display: none; }
+  #app.show { display: block; }
+  .tab-content { display: none; padding: 24px; max-width: 720px; margin: 0 auto; }
+  .tab-content.active { display: block; }
 
-/* Rodapé */
-footer{background:var(--branco);border-top:1px solid var(--cinza-linha);text-align:center;padding:13px 16px}
-.footer-links{display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap}
-.footer-link{display:flex;align-items:center;gap:6px;text-decoration:none;
-  font-family:'Raleway',sans-serif;font-weight:500;font-size:12px;
-  color:var(--cinza-texto);transition:color .2s}
-.footer-link:hover{color:var(--verde-escuro)}
-.footer-icon{width:16px;height:16px;fill:var(--verde-escuro);flex-shrink:0}
+  /* ---- CARDS ---- */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+  }
+  .card-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px; font-weight: 500;
+    color: var(--text); margin-bottom: 16px;
+    padding-bottom: 12px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
 
-/* ══ VISÃO GERAL ══ */
-.hero-banner{background:var(--verde-escuro);border-radius:6px;
-  padding:20px 18px 20px 22px;margin-bottom:14px;
-  display:flex;align-items:flex-start;justify-content:space-between;
-  position:relative;overflow:hidden}
-.hero-left{flex:1;min-width:0;padding-right:8px}
-.hero-proposta{font-size:9px;font-weight:600;color:rgba(255,255,255,.6);
-  text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px}
-.hero-client{font-family:'Raleway',sans-serif;font-size:26px;font-weight:600;
-  color:var(--branco);line-height:1.1;margin-bottom:5px}
-.hero-projeto{font-size:10px;font-weight:400;color:rgba(255,255,255,.65);
-  letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px}
-.hero-pills{display:flex;gap:7px;flex-wrap:wrap}
-.hero-pill{font-size:10px;font-weight:500;color:rgba(255,255,255,.8);
-  background:rgba(255,255,255,.12);padding:4px 9px;border-radius:2px}
-.hero-diamonds{flex-shrink:0;align-self:center}
+  /* ---- OVERVIEW GRID ---- */
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .info-item label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--text-soft); display: block; margin-bottom: 4px;
+  }
+  .info-item span { font-size: 15px; font-weight: 500; color: var(--text); }
 
-.progress-info-row{display:flex;justify-content:space-between;align-items:center;margin-top:6px}
-.progress-steps-label{font-size:11px;font-weight:400;color:var(--cinza-texto)}
-.progress-pct{font-size:13px;font-weight:600;color:var(--cinza-texto)}
+  /* ---- PROGRESS ---- */
+  .progress-wrap { margin: 4px 0 8px; }
+  .progress-label {
+    display: flex; justify-content: space-between;
+    font-size: 12px; color: var(--text-soft); margin-bottom: 6px;
+  }
+  .progress-bar {
+    height: 6px; background: var(--surface2);
+    border-radius: 3px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; background: var(--accent);
+    border-radius: 3px; transition: width 0.8s ease;
+  }
 
-.etapa-atual-card{background:var(--branco);border:1px solid var(--verde-borda);
-  border-radius:4px;padding:14px 18px;margin-bottom:14px}
-.etapa-atual-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px}
-.etapa-label{font-size:9px;font-weight:600;color:var(--cinza-texto);
-  text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
-.etapa-nome{font-size:18px;font-weight:500;color:var(--verde-escuro)}
-.etapa-atual-badges{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0}
-.previsao-box{display:inline-block;font-size:9px;font-weight:600;text-transform:uppercase;
-  letter-spacing:.06em;padding:4px 8px;border-radius:2px;
-  background:rgb(210,210,210);color:#555;white-space:nowrap}
-.etapa-subitem{font-size:12px;font-weight:400;color:var(--verde-escuro)}
+  /* ---- ETAPAS TIMELINE ---- */
+  .timeline { position: relative; padding-left: 28px; }
+  .timeline::before {
+    content: ''; position: absolute; left: 9px; top: 8px; bottom: 8px;
+    width: 1px; background: var(--border);
+  }
+  .timeline-item {
+    position: relative; margin-bottom: 20px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .timeline-item:last-child { margin-bottom: 0; }
+  .timeline-dot {
+    position: absolute; left: -23px; top: 4px;
+    width: 10px; height: 10px; border-radius: 50%;
+    border: 2px solid var(--border); background: var(--surface);
+    z-index: 1;
+  }
+  .timeline-dot.concluido { background: var(--green); border-color: var(--green); }
+  .timeline-dot.andamento { background: var(--accent); border-color: var(--accent); }
+  .timeline-name { font-size: 14px; font-weight: 500; color: var(--text); }
+  .timeline-meta { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .timeline-meta span { font-size: 12px; color: var(--text-soft); }
 
-.resumo-grid{display:flex;gap:7px;margin-bottom:18px}
-.resumo-item{flex:1;padding:12px 14px;background:var(--cinza-bg);
-  border:1px solid var(--verde-borda);border-radius:4px;min-width:0}
-.resumo-item.dark{background:var(--verde-escuro);border-color:var(--verde-escuro)}
-.resumo-label{font-size:9px;font-weight:500;color:var(--cinza-texto);
-  text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
-.resumo-item.dark .resumo-label{color:rgba(255,255,255,.7)}
-.resumo-value{font-family:'Raleway',sans-serif;font-size:15px;font-weight:600;
-  color:var(--verde-escuro);word-break:break-word}
-.resumo-item.dark .resumo-value{color:var(--branco)}
+  /* ---- SUBITENS ---- */
+  .subitem-group-title {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--text-soft); margin: 16px 0 8px;
+    padding-bottom: 6px; border-bottom: 1px solid var(--border);
+  }
+  .subitem-list { display: flex; flex-direction: column; gap: 8px; }
+  .subitem {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--surface2); border-radius: 8px;
+    font-size: 13px;
+  }
+  .subitem span { color: var(--text); }
 
-/* ══ CRONOGRAMA ══ */
-.cronograma-stage{display:flex;gap:12px;margin-bottom:8px;position:relative}
-.cronograma-stage:not(:last-child)::before{content:'';position:absolute;
-  left:15px;top:36px;bottom:-8px;width:2px;background:var(--cinza-linha)}
-.stage-number{width:32px;height:32px;transform:rotate(45deg);
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
-.stage-number span{transform:rotate(-45deg);font-size:10px;font-weight:700;color:var(--branco)}
-.stage-concluido .stage-number{background:var(--verde-escuro)}
-.stage-andamento .stage-number{background:var(--dourado)}
-.stage-pendente  .stage-number{background:var(--cinza-barra)}
-.stage-pendente  .stage-number span{color:var(--cinza-texto)}
-.stage-content{flex:1;padding-bottom:18px;min-width:0}
-.stage-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;gap:10px}
-.stage-name{font-size:14px;font-weight:600;color:var(--verde-escuro);margin-bottom:2px}
-.stage-andamento .stage-name{color:var(--dourado)}
-.stage-pendente  .stage-name{color:var(--cinza-texto)}
-.stage-prazo{font-size:10px;font-weight:500;color:var(--cinza-texto);margin-bottom:8px}
-.stage-badge-col{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
-.stage-date-below{font-size:10px;color:var(--cinza-texto);text-align:right}
-.date-normal{font-weight:400}.date-bold{font-weight:700}
-.stage-items-card{background:var(--cinza-bg);border:1px solid var(--cinza-linha);
-  border-radius:4px;padding:10px 12px;display:flex;flex-direction:column;gap:9px}
-.stage-item-row{display:flex;align-items:center;gap:9px}
-.item-diamond{width:8px;height:8px;transform:rotate(45deg);flex-shrink:0}
-.item-diamond.concluido{background:var(--verde-escuro)}
-.item-diamond.andamento{background:var(--dourado)}
-.item-diamond.pendente{background:var(--cinza-texto)}
-.item-text{font-size:12px;font-weight:500;color:#2a2a2a;flex:1}
-.item-text.andamento-text,.item-text.pendente-text{color:var(--cinza-texto)}
+  /* ---- BADGES ---- */
+  .badge {
+    font-size: 11px; font-weight: 500; padding: 3px 10px;
+    border-radius: 20px; letter-spacing: 0.3px; white-space: nowrap;
+  }
+  .badge.concluido   { background: var(--green-bg);  color: var(--green);  }
+  .badge.em-andamento{ background: var(--yellow-bg); color: var(--yellow); }
+  .badge.andamento   { background: var(--yellow-bg); color: var(--yellow); }
+  .badge.pendente    { background: var(--surface2);  color: var(--text-soft); }
+  .badge.em-atraso   { background: var(--red-bg);    color: var(--red);    }
+  .badge.atraso      { background: var(--red-bg);    color: var(--red);    }
+  .badge.confirmado  { background: var(--green-bg);  color: var(--green);  }
+  .badge.aprovado    { background: var(--green-bg);  color: var(--green);  }
+  .badge.aberto      { background: var(--blue-bg);   color: var(--blue);   }
+  .badge.analise     { background: var(--yellow-bg); color: var(--yellow); }
 
-/* ══ ARQUIVOS ══ */
-.pasta-titulo{display:inline-block;font-size:10px;font-weight:600;color:var(--branco);
-  background:var(--verde-escuro);text-transform:uppercase;letter-spacing:.1em;
-  padding:4px 11px;margin-bottom:8px;border-radius:2px}
-.arquivo-row{background:var(--branco);border:1px solid var(--cinza-linha);border-radius:4px;
-  padding:11px 13px;margin-bottom:7px;display:flex;align-items:center;gap:11px;
-  text-decoration:none;color:inherit;-webkit-tap-highlight-color:transparent}
-.arquivo-row:active{border-color:var(--verde-escuro)}
-.tipo-badge{display:flex;align-items:center;justify-content:center;
-  width:36px;height:36px;border-radius:4px;font-size:10px;font-weight:700;flex-shrink:0}
-.tipo-pdf{background:rgb(244,237,224);color:rgb(188,158,86)}
-.tipo-jpg,.tipo-png{background:var(--verde-borda);color:var(--verde-claro)}
-.tipo-dwg{background:var(--cinza-bg);color:var(--cinza-texto)}
-.arquivo-info{flex:1;min-width:0}
-.arquivo-nome{font-size:12px;font-weight:500;color:#2a2a2a;margin-bottom:2px}
-.arquivo-data{font-size:10px;color:var(--cinza-texto)}
-.pasta-section{margin-bottom:20px}
-.arq-diamond{display:inline-block;width:10px;height:10px;transform:rotate(45deg);
-  background:var(--verde-escuro);flex-shrink:0}
+  /* ---- FINANCEIRO ---- */
+  .fin-summary {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 12px; margin-bottom: 20px;
+  }
+  .fin-box {
+    background: var(--surface2); border-radius: 10px;
+    padding: 14px 16px; text-align: center;
+  }
+  .fin-box label {
+    font-size: 11px; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--text-soft);
+    display: block; margin-bottom: 6px;
+  }
+  .fin-box .value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px; font-weight: 600; color: var(--text);
+  }
+  .fin-box .value.hidden-val {
+    letter-spacing: 4px; color: var(--text-soft); font-size: 18px;
+  }
 
-/* ══ FINANCEIRO ══ */
-.pagamento-card{background:var(--cinza-bg);border:1px solid var(--verde-borda);
-  border-radius:4px;padding:12px 15px;margin-bottom:14px}
-.pagamento-title{font-size:10px;font-weight:600;color:var(--dourado);
-  text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
-.pagamento-desc{font-family:'Raleway',sans-serif;font-size:12px;font-weight:500;color:var(--cinza-texto)}
-.fin-resumo-grid{display:flex;gap:7px;margin-bottom:12px}
-.fin-progress-row{display:flex;justify-content:space-between;margin-bottom:4px;
-  font-family:'Raleway',sans-serif;font-size:11px;font-weight:500;color:var(--cinza-texto)}
-.parcelas-header{display:flex;justify-content:space-between;align-items:center;margin:16px 0 10px}
-.parcelas-label{display:inline-block;font-size:10px;font-weight:600;
-  background:var(--verde-escuro);color:var(--branco);
-  padding:4px 11px;border-radius:2px;text-transform:uppercase;letter-spacing:.08em}
-.btn-pix{font-size:10px;font-weight:600;color:var(--verde-escuro);background:var(--branco);
-  border:1px solid var(--verde-escuro);padding:5px 11px;border-radius:2px;cursor:pointer;
-  text-transform:uppercase;letter-spacing:.05em;-webkit-tap-highlight-color:transparent}
-.btn-pix:active{background:var(--verde-escuro);color:var(--branco)}
-.parcela-row{background:var(--branco);border:1px solid var(--cinza-linha);border-radius:4px;
-  padding:11px 13px;margin-bottom:7px;display:flex;align-items:center;gap:9px}
-.parcela-diamond{width:10px;height:10px;transform:rotate(45deg);flex-shrink:0}
-.parcela-info{flex:1;min-width:0}
-.parcela-nome{font-family:'Raleway',sans-serif;font-size:12px;font-weight:600;
-  color:var(--verde-escuro);margin-bottom:2px}
-.parcela-nome.atraso{color:var(--vermelho)}
-.parcela-nome.aberto{color:var(--cinza-texto)}
-.parcela-venc{font-size:10px;font-weight:500;color:var(--cinza-texto)}
-.parcela-direita{display:flex;align-items:center;gap:7px;flex-shrink:0}
-.parcela-valor{font-family:'Raleway',sans-serif;font-size:12px;font-weight:600;color:var(--verde-escuro)}
-.fin-nota{font-size:11px;font-style:italic;color:var(--cinza-texto);margin-top:10px;text-align:center}
+  /* ---- EYE BUTTON ---- */
+  .eye-btn {
+    background: none; border: none; cursor: pointer;
+    color: var(--text-soft); padding: 4px;
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; font-family: 'DM Sans', sans-serif;
+    transition: color 0.2s;
+  }
+  .eye-btn:hover { color: var(--accent); }
+  .eye-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
 
-/* ── PIX popup ── */
-.popup-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);
-  z-index:999;align-items:center;justify-content:center;padding:20px}
-.popup-overlay.show{display:flex}
-.popup-box{background:var(--branco);border:1px solid var(--verde-escuro);border-radius:6px;
-  padding:22px;max-width:310px;width:100%;text-align:center}
-.popup-title{font-weight:700;font-size:12px;color:var(--verde-escuro);
-  text-transform:uppercase;letter-spacing:.08em;margin-bottom:11px}
-.popup-key{font-weight:700;font-size:13px;color:var(--verde-escuro);
-  background:var(--cinza-bg);border:1px solid var(--verde-escuro);
-  border-radius:4px;padding:9px 12px;margin-bottom:10px;cursor:pointer;word-break:break-all}
-.popup-hint{font-size:11px;color:var(--cinza-texto);margin-bottom:12px}
-.popup-close{font-size:11px;font-weight:600;color:var(--cinza-texto);
-  background:none;border:1px solid var(--cinza-linha);border-radius:2px;padding:6px 18px;cursor:pointer}
+  /* ---- PARCELAS TABLE ---- */
+  .parc-table { width: 100%; border-collapse: collapse; }
+  .parc-table th {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--text-soft); font-weight: 500;
+    text-align: left; padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .parc-table td {
+    font-size: 13px; padding: 12px 10px;
+    border-bottom: 1px solid var(--surface2);
+    vertical-align: middle;
+  }
+  .parc-table tr:last-child td { border-bottom: none; }
+  .parc-table .valor-cell { font-weight: 500; }
 
-/* ══ RESPONSIVIDADE MOBILE ══ */
-@media(max-width:560px){
-  .hero-diamonds{display:none}
-  .hero-client{font-size:22px}
-  .resumo-grid,.fin-resumo-grid{flex-direction:column}
-  .etapa-atual-top{flex-wrap:wrap}
-  .etapa-atual-badges{flex-direction:row;flex-wrap:wrap}
-  .stage-top{flex-wrap:wrap}
-  .stage-badge-col{flex-direction:row;align-items:center;gap:6px}
-  .stage-date-below{text-align:left}
-  .parcela-direita{flex-direction:column;align-items:flex-end;gap:3px}
-}
+  /* ---- ARQUIVOS ---- */
+  .file-group-title {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--text-soft); margin: 16px 0 8px; padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  .file-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 0; border-bottom: 1px solid var(--surface2);
+  }
+  .file-item:last-child { border-bottom: none; }
+  .file-icon {
+    width: 34px; height: 34px; border-radius: 8px;
+    background: var(--accent-light); display: flex;
+    align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 600; color: var(--accent);
+    flex-shrink: 0; letter-spacing: 0.5px;
+  }
+  .file-info { flex: 1; min-width: 0; }
+  .file-name { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 2px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .file-meta { font-size: 12px; color: var(--text-soft); }
+  .file-link {
+    font-size: 12px; color: var(--accent); text-decoration: none;
+    font-weight: 500; white-space: nowrap;
+    padding: 6px 12px; border-radius: 6px;
+    background: var(--accent-light); transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .file-link:hover { background: #E5D9C9; }
+
+  /* ---- RESPONSIVE ---- */
+  @media (max-width: 500px) {
+    .info-grid { grid-template-columns: 1fr; }
+    .fin-summary { grid-template-columns: 1fr; }
+    header { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .header-client { text-align: left; }
+    .tab-content { padding: 16px; }
+    .card { padding: 16px 18px; }
+    .fin-box .value { font-size: 18px; }
+  }
 </style>
 </head>
 <body>
 
-<!-- Tela carregando -->
-<div id="loading-screen">
-  <div class="spin"></div>
-  <p style="font-size:13px;color:var(--cinza-texto)">Carregando seu portal…</p>
+<!-- LOADING -->
+<div id="loading">
+  <div class="loader-logo">PORTAL</div>
+  <div class="loader-bar"><div class="loader-bar-inner"></div></div>
 </div>
 
-<!-- Tela: link inválido -->
+<!-- ERROR -->
 <div id="error-screen">
-  <div class="state-logo">HEITOR FERNANDES</div>
-  <div class="state-sub">Designer de Interiores</div>
-  <div class="state-icon">🔍</div>
-  <div class="state-title">Projeto não encontrado</div>
-  <div class="state-msg">
-    Este link não corresponde a nenhum projeto ativo.<br>
-    Entre em contato pelo <a href="https://wa.me/5586988044155">WhatsApp</a>.
-  </div>
+  <h2>Ops.</h2>
+  <p id="error-msg">Não foi possível carregar os dados. Verifique o link recebido.</p>
 </div>
 
-<!-- Tela: script não configurado -->
-<div id="config-screen">
-  <div class="state-logo">HEITOR FERNANDES</div>
-  <div class="state-sub">Portal do Cliente</div>
-  <div class="state-icon">⚙️</div>
-  <div class="state-title">Configuração pendente</div>
-  <div class="state-msg">Cole a URL do Apps Script no código (veja o arquivo como-configurar.txt).</div>
-  <div class="state-code">
-    Procure no código:<br>
-    <strong>const SCRIPT_URL = "COLE_AQUI..."</strong><br>
-    e substitua pelo link do seu Apps Script.
-  </div>
-</div>
-
-<!-- ═══ INTERFACE PRINCIPAL ═══ -->
-<header style="display:none" id="main-header">
-  <div class="logo-area">
-    <!--
-      LOGO: substitua o <svg> abaixo pela sua imagem.
-      Exemplo: <img src="https://1drv.ms/i/c/1248F25D1EB3A40C/IQBW805LvzRCT5Il-LscJB68AfuQv_jdz0bXSp7BYBFbBCE?e=ruKUWp">
-    -->
-    <svg class="logo-svg" viewBox="0 0 54 54" fill="none">
-      <rect x="3"  y="8"  width="7"  height="38" fill="rgb(56,87,59)"/>
-      <rect x="3"  y="8"  width="22" height="7"  fill="rgb(56,87,59)"/>
-      <rect x="3"  y="26" width="16" height="6"  fill="rgb(56,87,59)"/>
-      <rect x="33" y="8"  width="7"  height="38" fill="rgb(56,87,59)"/>
-      <rect x="33" y="8"  width="19" height="7"  fill="rgb(56,87,59)"/>
-      <rect x="33" y="38" width="19" height="7"  fill="rgb(56,87,59)"/>
-    </svg>
-    <div class="logo-name-block">
-      <h1>HEITOR FERNANDES</h1>
-      <p>Designer de Interiores</p>
+<!-- APP -->
+<div id="app">
+  <header>
+    <div class="header-brand">HEITOR INTERIORES</div>
+    <div class="header-client">
+      <strong id="h-nome"></strong>
+      <span id="h-proposta"></span>
     </div>
-  </div>
-  <div class="header-right">
-    <div class="portal-label">Portal do Cliente</div>
-    <div class="client-name" id="hdr-client"></div>
-  </div>
-</header>
+  </header>
 
-<nav style="display:none" id="main-nav">
-  <button class="tab-btn active" onclick="abrirAba('visao',this)">Visão Geral</button>
-  <button class="tab-btn" onclick="abrirAba('cronograma',this)">Cronograma</button>
-  <button class="tab-btn" onclick="abrirAba('arquivos',this)">Arquivos</button>
-  <button class="tab-btn" onclick="abrirAba('financeiro',this)">Financeiro</button>
-</nav>
-
-<main style="display:none" id="main-content">
+  <nav class="tabs">
+    <div class="tab active" data-tab="visao">Visão Geral</div>
+    <div class="tab" data-tab="etapas">Etapas</div>
+    <div class="tab" data-tab="financeiro">Financeiro</div>
+    <div class="tab" data-tab="arquivos">Arquivos</div>
+  </nav>
 
   <!-- VISÃO GERAL -->
-  <div id="tab-visao" class="tab-content active">
-    <div class="hero-banner">
-      <div class="hero-left">
-        <div class="hero-proposta">Proposta Nº <span id="vg-proposta"></span></div>
-        <div class="hero-client" id="vg-client"></div>
-        <div class="hero-projeto" id="vg-projeto"></div>
-        <div class="hero-pills">
-          <span class="hero-pill">Atualizado hoje</span>
-          <span class="hero-pill" id="vg-pct-pill"></span>
-        </div>
-      </div>
-      <div class="hero-diamonds">
-        <svg width="88" height="88" viewBox="0 0 110 110">
-          <rect x="10" y="10" width="28" height="28" transform="rotate(45 24 24)" fill="none" stroke="rgb(91,119,95)" stroke-width="2" opacity="0.45"/>
-          <rect x="10" y="46" width="28" height="28" transform="rotate(45 24 60)" fill="none" stroke="rgb(91,119,95)" stroke-width="2" opacity="0.45"/>
-          <rect x="10" y="82" width="28" height="28" transform="rotate(45 24 96)" fill="none" stroke="rgb(91,119,95)" stroke-width="2" opacity="0.45"/>
-          <rect x="62" y="46" width="28" height="28" transform="rotate(45 76 60)" fill="none" stroke="rgb(91,119,95)" stroke-width="2" opacity="0.45"/>
-          <rect x="62" y="82" width="28" height="28" transform="rotate(45 76 96)" fill="none" stroke="rgb(91,119,95)" stroke-width="2" opacity="0.45"/>
-        </svg>
-      </div>
-    </div>
-
+  <div class="tab-content active" id="tab-visao">
     <div class="card">
-      <div class="section-header">
-        <div class="diamond" style="background:var(--dourado)"></div>
-        <span class="progresso-title">Progresso Geral</span>
-      </div>
-      <div class="progress-bar-wrap" style="margin-top:9px">
-        <div class="progress-bar-fill" id="vg-barra" style="width:0%"></div>
-      </div>
-      <div class="progress-info-row">
-        <span class="progress-steps-label" id="vg-etapas-label"></span>
-        <span class="progress-pct" id="vg-pct"></span>
-      </div>
+      <div class="card-title">Projeto</div>
+      <div class="info-grid" id="vg-info"></div>
     </div>
-
-    <div class="etapa-atual-card">
-      <div class="etapa-atual-top">
-        <div>
-          <div class="etapa-label">Etapa Atual</div>
-          <div class="etapa-nome" id="vg-etapa-nome"></div>
-        </div>
-        <div class="etapa-atual-badges">
-          <span class="badge badge-andamento">Em Andamento</span>
-          <span class="previsao-box" id="vg-previsao"></span>
-        </div>
-      </div>
-      <div class="etapa-subitem" id="vg-subitem"></div>
+    <div class="card">
+      <div class="card-title">Progresso das Etapas</div>
+      <div id="vg-etapas-prog"></div>
     </div>
-
-    <div class="resumo-grid">
-      <div class="resumo-item">
-        <div class="resumo-label">Investimento Total</div>
-        <div class="resumo-value" id="vg-invest"></div>
+    <div class="card">
+      <div class="card-title">
+        Resumo Financeiro
+        <button class="eye-btn" id="eye-vg-btn" onclick="toggleFinanceiro()">
+          <svg id="eye-vg-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+          </svg>
+          <span id="eye-vg-lbl">Ver valores</span>
+        </button>
       </div>
-      <div class="resumo-item dark">
-        <div class="resumo-label">Total Pago</div>
-        <div class="resumo-value" id="vg-pago"></div>
-      </div>
-      <div class="resumo-item">
-        <div class="resumo-label">Arquivos</div>
-        <div class="resumo-value" id="vg-arquivos"></div>
-      </div>
+      <div class="fin-summary" id="vg-fin"></div>
     </div>
   </div>
 
-  <!-- CRONOGRAMA -->
-  <div id="tab-cronograma" class="tab-content">
-    <div class="section-header">
-      <div class="diamond" style="background:var(--verde-borda)"></div>
-      <span class="section-title">Cronograma</span>
+  <!-- ETAPAS -->
+  <div class="tab-content" id="tab-etapas">
+    <div class="card">
+      <div class="card-title">Linha do Tempo</div>
+      <div class="timeline" id="et-timeline"></div>
     </div>
-    <div class="section-desc">Cada etapa do projeto organizada de forma clara e transparente.</div>
-    <hr class="divider">
-    <div id="crono-container"></div>
-  </div>
-
-  <!-- ARQUIVOS -->
-  <div id="tab-arquivos" class="tab-content">
-    <div class="section-header">
-      <div class="arq-diamond"></div>
-      <span class="section-title">Arquivos</span>
+    <div class="card">
+      <div class="card-title">Subitens</div>
+      <div id="et-subitens"></div>
     </div>
-    <div class="section-desc">Acesse, visualize e faça o download de todas as documentações e entregáveis do projeto.</div>
-    <hr class="divider">
-    <div id="arq-container"></div>
   </div>
 
   <!-- FINANCEIRO -->
-  <div id="tab-financeiro" class="tab-content">
-    <div class="section-header">
-      <div class="diamond" style="background:var(--dourado)"></div>
-      <span class="section-title">Resumo Financeiro</span>
-    </div>
-    <div class="section-desc">Consulte o fluxo de parcelas, valores totais e realize pagamentos diretamente via PIX.</div>
-    <hr class="divider">
-    <div class="pagamento-card">
-      <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px">
-        <div class="diamond" style="background:var(--dourado);width:8px;height:8px"></div>
-        <span class="pagamento-title">Forma de Pagamento Definida</span>
+  <div class="tab-content" id="tab-financeiro">
+    <div class="card">
+      <div class="card-title">
+        Resumo
+        <button class="eye-btn" id="eye-fin-btn" onclick="toggleFinanceiro()">
+          <svg id="eye-fin-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+          </svg>
+          <span id="eye-fin-lbl">Ver valores</span>
+        </button>
       </div>
-      <div class="pagamento-desc" id="fin-forma"></div>
+      <div class="fin-summary" id="fin-summary"></div>
+      <div id="fin-formas" style="font-size:13px;color:var(--text-soft);margin-top:4px;"></div>
     </div>
-    <div class="fin-resumo-grid">
-      <div class="resumo-item"><div class="resumo-label">Investimento Total</div><div class="resumo-value" id="fin-invest"></div></div>
-      <div class="resumo-item dark"><div class="resumo-label">Total Pago</div><div class="resumo-value" id="fin-pago"></div></div>
-      <div class="resumo-item"><div class="resumo-label">Saldo Remanescente</div><div class="resumo-value" id="fin-saldo" style="color:var(--verde-escuro)"></div></div>
+    <div class="card">
+      <div class="card-title">Parcelas</div>
+      <table class="parc-table">
+        <thead>
+          <tr>
+            <th>Parcela</th><th>Vencimento</th><th>Valor</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="fin-parcelas"></tbody>
+      </table>
     </div>
-    <div class="fin-progress-row">
-      <span id="fin-pago-pct"></span><span id="fin-total-label"></span>
-    </div>
-    <div class="progress-bar-wrap" style="margin-bottom:16px">
-      <div class="progress-bar-fill" id="fin-barra" style="width:0%"></div>
-    </div>
-    <div class="parcelas-header">
-      <span class="parcelas-label">Parcelas</span>
-      <button class="btn-pix" onclick="abrirPix()">Copiar Chave PIX</button>
-    </div>
-    <div id="fin-parcelas"></div>
-    <div class="fin-nota">Após efetuar pagamentos, o sistema leva até 24hs para ser atualizado.</div>
   </div>
 
-</main>
-
-<footer style="display:none" id="main-footer">
-  <div class="footer-links">
-    <a class="footer-link" href="https://wa.me/5586988044155" target="_blank">
-      <svg class="footer-icon" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-      (86) 9 8804-4155
-    </a>
-    <a class="footer-link" href="https://www.instagram.com/heitor.interiores?igsh=MThqZzkyOXRuZHpyag%3D%3D&utm_source=qr" target="_blank">
-      <svg class="footer-icon" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
-      @heitor.interiores
-    </a>
-  </div>
-</footer>
-
-<div class="popup-overlay" id="pix-popup">
-  <div class="popup-box">
-    <div class="popup-title">Chave PIX</div>
-    <div class="popup-key" id="pix-key" onclick="copiarPix()">heitor.interiores@gmail.com</div>
-    <div class="popup-hint">Toque na chave para copiar</div>
-    <button class="popup-close" onclick="fecharPix()">Fechar</button>
+  <!-- ARQUIVOS -->
+  <div class="tab-content" id="tab-arquivos">
+    <div class="card">
+      <div class="card-title">Documentos e Arquivos</div>
+      <div id="arq-list"></div>
+    </div>
   </div>
 </div>
 
 <script>
-// ══════════════════════════════════════════════════════════════
-//  ★  COLE AQUI A URL DO SEU APPS SCRIPT  ★
-// ══════════════════════════════════════════════════════════════
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzassHZC0hvqpVqtWOnu6BCGeowcVHoSTF8B_mDmV3B89JSwKBtjsIiSJd2Vqw3fhOk/exec";
-// ══════════════════════════════════════════════════════════════
+// =====================================================
+// SUBSTITUA PELA URL DO SEU GOOGLE APPS SCRIPT
+// =====================================================
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyfpVGY_-_0ez2hV4yzqbn9b9c9f05UkE0rg7y5ORxgBtmNe7_8moDHx_VTgkXgnfCD/exec';
 
-function fmt(v){return Number(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}
-function show(id){document.getElementById(id).style.display=''}
-function hide(id){document.getElementById(id).style.display='none'}
-function getCode(){return new URLSearchParams(window.location.search).get('c')}
+// =====================================================
+let finVisible = false;
+let globalData = null;
 
-async function fetchDados(codigo){
-  const r = await fetch(SCRIPT_URL+'?c='+encodeURIComponent(codigo));
-  if(!r.ok) throw new Error('HTTP '+r.status);
-  return r.json();
+// Formata número como moeda brasileira
+function fmt(v) {
+  const n = parseFloat(String(v).replace(',', '.'));
+  if (isNaN(n)) return v || '—';
+  return 'R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
 }
 
-function renderVisaoGeral(d){
-  const conc=[d.status_ep1,d.status_ep2,d.status_ep3,d.status_ep4].filter(s=>s==='concluido').length;
-  const pct=Math.round(conc/4*100);
-  const arq=Number(d.total_arquivos)||0;
-  document.getElementById('hdr-client').textContent   =d.nome_cliente||'';
-  document.getElementById('vg-proposta').textContent  =d.numero_proposta||'';
-  document.getElementById('vg-client').textContent    =d.nome_cliente||'';
-  document.getElementById('vg-projeto').textContent   =d.tipo_projeto||'';
-  document.getElementById('vg-pct-pill').textContent  =pct+'% concluído';
-  document.getElementById('vg-barra').style.width     =pct+'%';
-  document.getElementById('vg-etapas-label').textContent=conc+' de 4 etapas concluídas';
-  document.getElementById('vg-pct').textContent       =pct+'%';
-  document.getElementById('vg-etapa-nome').textContent=d.etapa_atual_nome||'';
-  document.getElementById('vg-subitem').textContent   =d.etapa_atual_subitem||'';
-  document.getElementById('vg-invest').textContent    =fmt(d.investimento_total);
-  document.getElementById('vg-pago').textContent      =fmt(d.total_pago);
-  document.getElementById('vg-arquivos').textContent  =arq+' unidades';
-  document.getElementById('vg-previsao').textContent  ='Previsão: '+(d.previsao_etapa_atual||'');
+// Gera badge de status — funciona com qualquer texto
+function badge(status) {
+  if (!status) return '';
+  const raw = String(status).trim();
+  const cls = raw.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // remove acentos
+    .replace(/\s+/g, '-');
+  return `<span class="badge ${cls}">${raw}</span>`;
 }
 
-function renderCronograma(d){
-  const etapas=[
-    {n:'01',nome:d.ep1_nome,prazo:d.ep1_prazo,data:d.ep1_data,st:d.status_ep1,si:d.ep1_subitens},
-    {n:'02',nome:d.ep2_nome,prazo:d.ep2_prazo,data:d.ep2_data,st:d.status_ep2,si:d.ep2_subitens},
-    {n:'03',nome:d.ep3_nome,prazo:d.ep3_prazo,data:d.ep3_data,st:d.status_ep3,si:d.ep3_subitens},
-    {n:'04',nome:d.ep4_nome,prazo:d.ep4_prazo,data:d.ep4_data,st:d.status_ep4,si:d.ep4_subitens},
-  ];
-  const bc={
-    concluido:{cls:'badge-concluido',label:'Concluído'},
-    andamento:{cls:'badge-andamento',label:'Em Andamento'},
-    pendente: {cls:'badge-pendente', label:'Pendente'},
-  };
-  document.getElementById('crono-container').innerHTML=etapas.map(e=>{
-    const st=e.st||'pendente';
-    const b=bc[st]||bc.pendente;
-    const dataStr=st==='concluido'?e.data:(e.data==='A ser agendado'?'A ser agendado':'Previsão: '+e.data);
-    const siHtml=(e.si||[]).map(si=>{
-      const dc=si.status==='concluido'?'concluido':si.status==='andamento'?'andamento':'pendente';
-      const tc=si.status==='concluido'?'':'andamento-text';
-      return`<div class="stage-item-row"><div class="item-diamond ${dc}"></div><span class="item-text ${tc}">${si.nome}</span></div>`;
-    }).join('');
-    return`<div class="cronograma-stage stage-${st}">
-      <div class="stage-number"><span>${e.n}</span></div>
-      <div class="stage-content">
-        <div class="stage-top">
-          <div><div class="stage-name">${e.nome||''}</div><div class="stage-prazo">${e.prazo||''}</div></div>
-          <div class="stage-badge-col">
-            <span class="badge ${b.cls}">${b.label}</span>
-            <div class="stage-date-below">${dataStr||''}</div>
-          </div>
-        </div>
-        <div class="stage-items-card">${siHtml||'<span style="font-size:11px;color:var(--cinza-texto)">Sem subitens</span>'}</div>
+// SVG olho aberto
+function svgOpen() {
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+  </svg>`;
+}
+// SVG olho fechado
+function svgClosed() {
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94
+    M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19
+    m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+    <line x1="1" y1="1" x2="23" y2="23"/>
+  </svg>`;
+}
+
+function toggleFinanceiro() {
+  finVisible = !finVisible;
+  renderFinanceiro();
+}
+
+function renderFinanceiro() {
+  if (!globalData) return;
+  const { financeiro, parcelas } = globalData;
+
+  const totalNum = parseFloat(String(financeiro.total).replace(',', '.')) || 0;
+  const pagoNum  = parseFloat(String(financeiro.pago).replace(',', '.'))  || 0;
+  const restante = totalNum - pagoNum;
+
+  // Atualiza botões olhinho
+  ['vg', 'fin'].forEach(id => {
+    const svgEl = document.getElementById(`eye-${id}-svg`);
+    const lblEl = document.getElementById(`eye-${id}-lbl`);
+    if (svgEl) svgEl.outerHTML = `<span id="eye-${id}-svg" style="display:flex;width:16px;height:16px">${finVisible ? svgOpen() : svgClosed()}</span>`;
+    if (lblEl) lblEl.textContent = finVisible ? 'Ocultar valores' : 'Ver valores';
+  });
+
+  // Bloco de valor — esconde ou mostra
+  const val = (v) => finVisible
+    ? `<div class="value">${v}</div>`
+    : `<div class="value hidden-val">• • •</div>`;
+
+  const sumHtml = `
+    <div class="fin-box"><label>Total do Projeto</label>${val(fmt(totalNum))}</div>
+    <div class="fin-box"><label>Total Pago</label>${val(fmt(pagoNum))}</div>
+    <div class="fin-box"><label>Saldo Restante</label>${val(fmt(restante))}</div>
+  `;
+  ['vg-fin', 'fin-summary'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = sumHtml;
+  });
+
+  // Tabela de parcelas — quantidade dinâmica
+  const tbody = document.getElementById('fin-parcelas');
+  if (tbody) {
+    if (parcelas.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" style="color:var(--text-soft);font-size:13px;padding:16px 10px;">Nenhuma parcela cadastrada.</td></tr>';
+    } else {
+      tbody.innerHTML = parcelas.map(p => `
+        <tr>
+          <td>${p.nome}</td>
+          <td>${p.vencimento}</td>
+          <td class="valor-cell">${finVisible ? fmt(p.valor) : '<span style="letter-spacing:3px;color:var(--text-soft)">• • •</span>'}</td>
+          <td>${badge(p.status)}</td>
+        </tr>
+      `).join('');
+    }
+  }
+}
+
+function render(data) {
+  globalData = data;
+  const { basicos, statusEtapas, etapas, subitens, financeiro, parcelas, arquivos } = data;
+
+  // --- HEADER ---
+  document.getElementById('h-nome').textContent = basicos.nomeCliente || '—';
+  document.getElementById('h-proposta').textContent =
+    `Proposta #${basicos.numeroProposta} · ${basicos.tipoProjeto}`;
+
+  // --- VISÃO GERAL: info ---
+  document.getElementById('vg-info').innerHTML = `
+    <div class="info-item"><label>Etapa Atual</label><span>${basicos.etapaAtual || '—'}</span></div>
+    <div class="info-item"><label>Em Andamento</label><span>${basicos.subitEmAndamento || '—'}</span></div>
+    <div class="info-item"><label>Previsão da Etapa</label><span>${basicos.previsaoEtapa || '—'}</span></div>
+    <div class="info-item"><label>Tipo de Projeto</label><span>${basicos.tipoProjeto || '—'}</span></div>
+  `;
+
+  // --- VISÃO GERAL: progresso dinâmico ---
+  // Conta quantas etapas existem e quantas estão concluídas
+  const total = statusEtapas.length;
+  const concluidas = statusEtapas.filter(s =>
+    s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'') === 'concluido'
+  ).length;
+  const pct = total > 0 ? Math.round((concluidas / total) * 100) : 0;
+  document.getElementById('vg-etapas-prog').innerHTML = `
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span>${concluidas} de ${total} etapa${total !== 1 ? 's' : ''} concluída${concluidas !== 1 ? 's' : ''}</span>
+        <span>${pct}%</span>
       </div>
-    </div>`;
-  }).join('');
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    </div>
+  `;
+
+  // --- FINANCEIRO (renderiza oculto) ---
+  renderFinanceiro();
+  const finFormas = document.getElementById('fin-formas');
+  if (finFormas && financeiro.formas) {
+    finFormas.textContent = `Forma de pagamento: ${financeiro.formas}`;
+  }
+
+  // --- ETAPAS: timeline dinâmica ---
+  if (etapas.length === 0) {
+    document.getElementById('et-timeline').innerHTML =
+      '<p style="color:var(--text-soft);font-size:13px;">Nenhuma etapa cadastrada.</p>';
+  } else {
+    document.getElementById('et-timeline').innerHTML = etapas.map((e, i) => {
+      const s = (statusEtapas[i] || 'pendente').toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+      const dotClass = s === 'concluido' ? 'concluido'
+        : (s === 'em andamento' || s === 'andamento') ? 'andamento' : '';
+      return `
+        <div class="timeline-item">
+          <div class="timeline-dot ${dotClass}"></div>
+          <div class="timeline-name">${e.nome}</div>
+          <div class="timeline-meta">
+            <span>Prazo: ${e.prazo || '—'}</span>
+            <span>${e.data || '—'}</span>
+            ${badge(statusEtapas[i] || 'pendente')}
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // --- SUBITENS: agrupados dinamicamente ---
+  const subEl = document.getElementById('et-subitens');
+  if (subitens.length === 0) {
+    subEl.innerHTML = '<p style="color:var(--text-soft);font-size:13px;">Nenhum subitem cadastrado.</p>';
+  } else {
+    // Agrupa por campo "grupo"
+    const grupos = {};
+    subitens.forEach(s => {
+      const g = s.grupo || '';
+      if (!grupos[g]) grupos[g] = [];
+      grupos[g].push(s);
+    });
+    let html = '';
+    for (const [grp, items] of Object.entries(grupos)) {
+      if (grp) html += `<div class="subitem-group-title">${grp}</div>`;
+      html += `<div class="subitem-list">`;
+      items.forEach(s => {
+        html += `<div class="subitem"><span>${s.nome}</span>${badge(s.status)}</div>`;
+      });
+      html += `</div>`;
+    }
+    subEl.innerHTML = html;
+  }
+
+  // --- ARQUIVOS: agrupados por pasta, quantidade dinâmica ---
+  const arqEl = document.getElementById('arq-list');
+  if (arquivos.length === 0) {
+    arqEl.innerHTML = '<p style="color:var(--text-soft);font-size:13px;">Nenhum arquivo cadastrado.</p>';
+  } else {
+    const grupos = {};
+    arquivos.forEach(a => {
+      const g = a.pasta || 'Geral';
+      if (!grupos[g]) grupos[g] = [];
+      grupos[g].push(a);
+    });
+    let html = '';
+    for (const [pasta, items] of Object.entries(grupos)) {
+      html += `<div class="file-group-title">${pasta}</div>`;
+      items.forEach(a => {
+        html += `
+          <div class="file-item">
+            <div class="file-icon">${(a.tipo || 'ARQ').toUpperCase()}</div>
+            <div class="file-info">
+              <div class="file-name">${a.nome || '—'}</div>
+              <div class="file-meta">${[a.data, a.statusArq].filter(Boolean).join(' · ')}</div>
+            </div>
+            ${a.link ? `<a class="file-link" href="${a.link}" target="_blank" rel="noopener">Abrir</a>` : ''}
+          </div>`;
+      });
+    }
+    arqEl.innerHTML = html;
+  }
 }
 
-function renderArquivos(d){
-  const pastas=d.pastas||[];
-  if(!pastas.length){
-    document.getElementById('arq-container').innerHTML='<p style="color:var(--cinza-texto);font-size:13px">Nenhum arquivo disponível ainda.</p>';
+// ---- TABS ----
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+// ---- INIT ----
+function showError(msg) {
+  document.getElementById('loading').classList.add('hide');
+  const err = document.getElementById('error-screen');
+  err.classList.add('show');
+  if (msg) document.getElementById('error-msg').textContent = msg;
+}
+
+async function init() {
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('c');
+  if (!code) {
+    showError('Nenhum código de cliente informado. Verifique o link recebido.');
     return;
   }
-  document.getElementById('arq-container').innerHTML=pastas.map(p=>{
-    const arqs=(p.arquivos||[]).map(a=>{
-      const tc='tipo-'+(a.tipo||'pdf').toLowerCase();
-      const bc=a.status==='aprovado'?'badge-aprovado':'badge-analise';
-      const bl=a.status==='aprovado'?'Aprovado':'Em Análise';
-      return`<a class="arquivo-row" href="${a.link||'#'}" target="_blank">
-        <div class="tipo-badge ${tc}">${a.tipo||'?'}</div>
-        <div class="arquivo-info"><div class="arquivo-nome">${a.nome||''}</div><div class="arquivo-data">${a.data||''}</div></div>
-        <span class="badge ${bc}">${bl}</span></a>`;
-    }).join('');
-    return`<div class="pasta-section"><div class="pasta-titulo">${p.titulo||''}</div>${arqs}</div>`;
-  }).join('');
-}
-
-function renderFinanceiro(d){
-  const inv=Number(d.investimento_total)||0;
-  const pago=Number(d.total_pago)||0;
-  const saldo=inv-pago;
-  const pct=inv>0?Math.round(pago/inv*100):0;
-  document.getElementById('fin-forma').textContent    =d.forma_pagamento||'';
-  document.getElementById('fin-invest').textContent   =fmt(inv);
-  document.getElementById('fin-pago').textContent     =fmt(pago);
-  document.getElementById('fin-saldo').textContent    =fmt(saldo);
-  document.getElementById('fin-pago-pct').textContent ='Pago: '+pct+'%';
-  document.getElementById('fin-total-label').textContent='Total: '+fmt(inv);
-  document.getElementById('fin-barra').style.width    =pct+'%';
-  const dMap={confirmado:'background:var(--verde-escuro)',atraso:'background:var(--vermelho)',aberto:'background:transparent;border:2px solid rgb(197,197,191)'};
-  const cMap={
-    confirmado:{bg:'var(--verde-escuro)',txt:'#fff',label:'Confirmado'},
-    atraso:    {bg:'var(--vermelho)',    txt:'#fff',label:'Em atraso'},
-    aberto:    {bg:'var(--cinza-bg)',    txt:'var(--cinza-texto)',label:'Em aberto'},
-  };
-  document.getElementById('fin-parcelas').innerHTML=(d.parcelas||[]).map(p=>{
-    const cm=cMap[p.status]||cMap.aberto;
-    const nc=p.status==='atraso'?'atraso':p.status==='aberto'?'aberto':'';
-    return`<div class="parcela-row">
-      <div class="parcela-diamond" style="${dMap[p.status]||dMap.aberto}"></div>
-      <div class="parcela-info">
-        <div class="parcela-nome ${nc}">${p.nome||''}</div>
-        <div class="parcela-venc">Vencimento: ${p.vencimento||''}</div>
-      </div>
-      <div class="parcela-direita">
-        <span class="parcela-valor">${fmt(p.valor)}</span>
-        <span class="badge" style="background:${cm.bg};color:${cm.txt}">${cm.label}</span>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function mostrarPortal(d){
-  renderVisaoGeral(d);renderCronograma(d);renderArquivos(d);renderFinanceiro(d);
-  hide('loading-screen');
-  show('main-header');show('main-nav');show('main-content');show('main-footer');
-}
-
-async function init(){
-  if(SCRIPT_URL==='COLE_AQUI_A_URL_DO_SEU_APPS_SCRIPT'){
-    hide('loading-screen');show('config-screen');return;
+  try {
+    const res = await fetch(`${SCRIPT_URL}?c=${encodeURIComponent(code)}`);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (data.error) { showError(data.error); return; }
+    render(data);
+    setTimeout(() => {
+      document.getElementById('loading').classList.add('hide');
+      document.getElementById('app').classList.add('show');
+    }, 1800);
+  } catch (e) {
+    showError('Não foi possível carregar os dados. Verifique sua conexão ou tente mais tarde.');
+    console.error(e);
   }
-  const codigo=getCode();
-  if(!codigo){hide('loading-screen');show('error-screen');return;}
-  try{
-    const d=await fetchDados(codigo);
-    if(!d||d.erro){hide('loading-screen');show('error-screen');return;}
-    mostrarPortal(d);
-  }catch(e){hide('loading-screen');show('error-screen');}
 }
 
-function abrirAba(aba,btn){
-  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('tab-'+aba).classList.add('active');
-  btn.classList.add('active');
-}
-function abrirPix(){document.getElementById('pix-popup').classList.add('show')}
-function fecharPix(){document.getElementById('pix-popup').classList.remove('show')}
-function copiarPix(){
-  navigator.clipboard.writeText('heitor.interiores@gmail.com').then(()=>{
-    document.getElementById('pix-key').textContent='✓ Copiado!';
-    setTimeout(()=>{document.getElementById('pix-key').textContent='heitor.interiores@gmail.com'},2000);
-  });
-}
 init();
 </script>
 </body>
